@@ -438,7 +438,7 @@ async function recheck(){ADM=null;render();try{var U=await claude.use('user');ME
 function gate(){var who=ME&&(ME.email||ME.name);
 if(ADM===null)return '<div class="w pg ad"><span class="pl2" style="margin-left:0">Admin login</span><h1 class="h2">Admin</h1><p class="mu">Checking your access…</p></div>';
 return '<div class="w pg ad"><a class="btn g s" href="#/" style="margin-bottom:14px">← Back to site</a><span class="pl2">Admin login</span><h1 class="h2">Access Denied</h1><div class="cd" style="padding:20px;max-width:540px;margin:14px 0"><p>This area is for STYLE PLAY admins only.</p><p class="mu" style="margin-top:10px">'+(who?'Signed in as '+esc(who)+' — not an admin of this site.':'You are not signed in as an admin.')+'</p><p class="mu" style="margin-top:10px">Admin access belongs to the Claude account that owns this site, plus editors the owner invites. It is checked on the server, so knowing the admin address is not enough.</p></div><div class="rw" style="margin-left:0"><button class="btn" data-a="ad_recheck">Check again</button><a class="btn g" href="#/">Back to site</a></div></div>'}
-function adm(){if(ADM){adSubscribe();repairLinks()}if(ADM===null||!ADM)return gate();
+function adm(){if(!window.claude)return saPage();if(ADM){adSubscribe();repairLinks()}if(ADM===null||!ADM)return gate();
 if(!DB)return '<div class="w pg"><h1 class="h2">Admin</h1><p>The database is not available in this view.</p></div>';
 var T=[['dash','Dashboard'],['prod','Products'],['out','Outfits'],['par','Partners'],['subs','Submissions'],['cat','Categories'],['sty','Styles']],b;
 if(ADV=='dash')b='<div class="g sg">'+[['Products on site',Object.keys(P).length],['Added by admin',(CAT.products||[]).length],['Needs review',(CAT.products||[]).filter(function(d){return !(d.styles&&d.styles.length)||!d.category}).length],['Styles',SK().length],['Categories',CATS.length-1],['Outfits',OUT.length],['Partners',(CAT.partners||[]).length],['Pending submissions',allSubs().filter(function(x){return x.status=='Pending Review'||x.editStatus=='Pending Review'}).length],['Pending partner applications',(CAT.profiles||[]).filter(function(d){return pStatus(d.id)=='Pending Approval'}).length]].map(function(x){return '<div class="cd"><p class="mu">'+x[0]+'</p><div class="pr">'+x[1]+'</div></div>'}).join('')+'</div><div class="rw" style="margin-left:0"><button class="btn" data-a="ad_new">+ Add Product</button><button class="btn g" data-a="ad_exp">Export backup</button><button class="btn g" data-a="ad_hd">'+(HD?'Show':'Hide')+' built-in demo products</button>'+(function(){var n=allSubs().filter(function(x){return x.status=='Pending Review'||x.editStatus=='Pending Review'}).length;return n?'<button class="btn" data-a="ad_tab" data-id="subs">Review submissions ('+n+')</button>':''})()+'<button class="btn d" data-a="ad_reset">'+(RSTC?'Confirm reset?':'Reset to original')+'</button></div><p class="mu">Promotions, featured content, users and analytics are not built yet.</p>'+bkPanel()+(EXP?expPanel():'')+'<p class="mu">Sign-in uses the Claude account that owns this site (prototype). Email + password login comes with the Supabase version.</p>';
@@ -549,7 +549,7 @@ function pcForm(){var e=PEI;return '<div class="cd" style="padding:20px;max-widt
 function pcStatusTab(){var L=PCI.slice().sort(function(a,b){return(b.updatedAt||0)-(a.updatedAt||0)});return L.length?'<div style="margin-top:12px">'+L.map(function(x){return '<div class="it"><div class="i"><b>'+esc(x.name)+'</b> '+sPill(x.status||'Draft')+'<br><span class="mu">'+(x.submittedAt?'Submitted '+esc(new Date(x.submittedAt).toLocaleDateString()):'Not submitted yet')+'</span>'+(x.feedback&&x.status!='Approved'?'<br><span class="bdg2" style="white-space:normal">Admin note: '+esc(x.feedback)+'</span>':'')+'</div><div class="ac">'+(x.status=='Approved'||x.status=='Pending Review'?'':'<button class="btn g s" data-a="pc_edit" data-id="'+x.id+'">Edit</button>')+'</div></div>'}).join('')+'</div>':'<p class="mu" style="margin-top:12px">Nothing submitted yet.</p>'}
 function pcOverview(){var c={};PCI.forEach(function(x){var k=x.status||'Draft';c[k]=(c[k]||0)+1});var fb=PCI.filter(function(x){return x.feedback&&x.status!='Approved'});
 return '<div class="g sg" style="margin-top:12px">'+['Draft','Pending Review','Needs Changes','Approved','Rejected'].map(function(k){return '<div class="cd"><p class="mu">'+k+'</p><div class="pr">'+(c[k]||0)+'</div></div>'}).join('')+'</div>'+(fb.length?'<h3 style="margin:16px 0 8px">Admin feedback</h3>'+fb.map(function(x){return '<div class="it"><div class="i"><b>'+esc(x.name)+'</b> '+sPill(x.status)+'<br><span class="bdg2" style="white-space:normal">'+esc(x.feedback)+'</span></div><div class="ac"><button class="btn g s" data-a="pc_edit" data-id="'+x.id+'">Edit and resubmit</button></div></div>'}).join(''):'')+'<div class="rw" style="margin-left:0;margin-top:14px"><button class="btn" data-a="pc_tab" data-id="add">Add Product</button><button class="btn g" data-a="pc_tab" data-id="prod">My Products</button></div>'}
-function pcPage(){if(!window.claude)return pmsg('Partner Center works inside STYLE PLAY on Claude.');
+function pcPage(){if(!window.claude)return svPage();
 if(ME===null)return pmsg('Checking your account…');if(!ME||!ME.id)return pmsg('Sign in with Claude to use Partner Center.');pcSubscribe();pcPersist();
 var st=pStatus(ME.id),head='<div class="w pg"><a class="btn g s" href="#/" style="margin-bottom:14px">← Back to site</a><h1 class="h2" style="margin-bottom:6px">Partner Center</h1><p class="mu" style="margin-bottom:6px">Submit your fashion products to STYLE PLAY</p><p class="mu" style="margin-bottom:16px">Prototype: you are signed in with your Claude account ('+esc(ME.name||'partner')+'). Your products stay hidden until the STYLE PLAY team approves them.</p>';
 if(st!='Approved')return head+pcSetup(st)+'</div>';
@@ -909,7 +909,7 @@ AU.mode='loading';AU.fromLink=/[?&]code=/.test(location.search);auLinkError();
 var go=function(){try{AU.sb=window.supabase.createClient(String(SB_URL).trim().replace(/\/+$/,''),String(SB_KEY).trim(),{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'styleplay-auth'}});AU.sb.auth.onAuthStateChange(auEvent);AU.mode='ready';sbCat()}catch(e){AU.mode='nolib'}auRefresh(true)};
 if(window.supabase&&window.supabase.createClient){go();return}
 var sc=document.createElement('script');sc.src=SB_LIB.src;sc.integrity=SB_LIB.sri;sc.crossOrigin='anonymous';sc.onload=go;sc.onerror=function(){AU.mode='nolib';auRefresh(true)};document.head.appendChild(sc)}
-function auEvent(ev,session){AU.user=session&&session.user?session.user:null;csAuth(ev,AU.user);
+function auEvent(ev,session){AU.user=session&&session.user?session.user:null;csAuth(ev,AU.user);svAuth(AU.user);
 if(ev=='INITIAL_SESSION')AU.ready=true;if(ev=='PASSWORD_RECOVERY'){AU.recovery=true;AU.ready=true}if(ev=='SIGNED_OUT'){AU.recovery=false;AU.edit=null}
 setTimeout(function(){
 if(AU.fromLink&&(ev=='SIGNED_IN'||ev=='PASSWORD_RECOVERY')){auCleanUrl();AU.fromLink=false;if(ev=='PASSWORD_RECOVERY'){location.hash='#/reset'}else{location.hash='#/profile';toast('Email confirmed. You are signed in.')}auRefresh(false);return}
@@ -1363,6 +1363,285 @@ function sbTrack(pid,src){var u=SBC.map[pid];if(!u||AU.mode!='ready')return;
 try{fetch(SB_URL+'/functions/v1/track-click',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',apikey:SB_KEY},body:JSON.stringify({product_id:u,source:src||'other'})}).catch(function(){})}catch(e){}}
 function sbClick(e){var a=e.target&&e.target.closest?e.target.closest('a[data-tc]'):null;if(a&&(e.type=='click'||e.button==1))sbTrack(a.getAttribute('data-tc'),a.getAttribute('data-src'))}
 document.addEventListener('click',sbClick,true);document.addEventListener('auxclick',sbClick,true);
+// ==================== SELLER CENTER + ADMIN on Supabase (used when the site runs on its own address) ====================
+// Inside Claude the original Partner Center / Admin (Claude database) stay as they are. Everywhere else #/partner and #/admin use these.
+// Who may do what is decided by the database (row-level security, column grants, guard triggers) and by the Edge Functions;
+// the checks here only make the screens friendly.
+var SV={uid:null,loading:false,loaded:false,err:'',app:null,mem:[],stores:[],sid:null,tab:'prod',prods:[],imgs:{},pst:{},cats:[],stys:[],priv:null,ed:null,ap:null,st:null,pv:null,code:'',busy:false,del:null};
+var SA={uid:null,loading:false,loaded:false,err:'',admin:null,tab:'apps',apps:[],prods:[],imgs:{},pst:{},stores:[],priv:{},tickets:[],note:{},inv:{email:'',role:'owner',store:''},invOut:null,busy:false};
+var SV_ST={draft:'Draft',pending_review:'Pending Review',changes_requested:'Needs Changes',published:'Live',hidden:'Hidden',rejected:'Rejected',submitted:'Pending Review',approved:'Approved',active:'Active',paused:'Paused',removed:'Removed',open:'Open',in_progress:'In progress',resolved:'Resolved'};
+var SV_COL={'Live':'linear-gradient(90deg,#ffe2b2,#bfe3ff)','Approved':'linear-gradient(90deg,#ffe2b2,#bfe3ff)','Active':'#c8f0d2','Resolved':'#c8f0d2','Pending Review':'#fff0b8','In progress':'#fff0b8','Open':'#fff0b8','Needs Changes':'#ffb3c6','Rejected':'#ffb3c6','Paused':'#ffb3c6','Hidden':'#e4e6ee','Draft':'#e4e6ee','Removed':'#e4e6ee'};
+function svPill(s){var t=SV_ST[s]||s;return '<span class="sp2" style="background:'+(SV_COL[t]||'#e4e6ee')+'">'+esc(t)+'</span>'}
+function svDate(d){try{return d?new Date(d).toLocaleDateString():''}catch(e){return ''}}
+function svImgUrl(bucket,path){return /^[\w\-./]+$/.test(path||'')&&path.indexOf('..')<0?SB_URL+'/storage/v1/object/public/'+bucket+'/'+path:''}
+function svHttps(u){u=String(u||'').trim();return /^https:\/\/[^\s<>"'`\\]+$/i.test(u)&&!!safeUrl(u)}
+function svEmail(v){v=String(v||'').trim();return v.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)}
+function svOn(){return !window.claude}
+// ---------- auth hook: reset when the signed-in person changes ----------
+function svAuth(u){var id=u?u.id:null;if(SV.uid!==id){SV.uid=id;SV.loaded=false;SV.loading=false;SV.app=null;SV.mem=[];SV.stores=[];SV.sid=null;SV.prods=[];SV.ed=null;SV.ap=null;SV.st=null;SV.pv=null;SV.err=''}
+if(SA.uid!==id){SA.uid=id;SA.loaded=false;SA.loading=false;SA.admin=null;SA.apps=[];SA.prods=[];SA.stores=[];SA.tickets=[];SA.invOut=null;SA.err=''}
+if(svOn()&&['partner','admin'].indexOf(auRoute())>-1)setTimeout(render,0)}
+// ---------- error messages ----------
+var SV_FN={unauthorized:'Please sign in again.',forbidden:'Only STYLE PLAY admins can do this.',not_found:'Not found. It may have been changed or removed.',already_used:'This invite code was already used.',expired:'This invite code has expired. Ask STYLE PLAY for a new one.',email_not_confirmed:'Confirm your e-mail address first, then try again.',rate_limited:'Too many tries. Please wait a little.',not_awaiting_review:'This was already decided.',not_published:'Only a live product can be hidden.',no_shop_link:'This product has no shop link yet.',invalid_request:'Please check what you entered.',server_error:'Something went wrong. Please try again.'};
+function svDbMsg(e){var m=String(e&&e.message||e||'');
+if(/product_live_needs_link/.test(m))return 'Add a shop link (https://…) before sending it for review.';
+if(/app_complete_when_submitted/.test(m))return 'Please complete every required field before sending.';
+if(/seller_app_one_open/.test(m))return 'You already have an application in progress.';
+if(/keep at least one owner/.test(m))return 'A store must keep at least one owner.';
+if(/row-level security|permission denied|not allowed|42501/i.test(m))return 'You do not have permission for this.';
+if(/website|store_url|product_url/.test(m)&&/check/.test(m))return 'Links must start with https://';
+if(/contact_email|email/.test(m)&&/check/.test(m))return 'Check the e-mail address.';
+if(/mime|InvalidMimeType|415/i.test(m))return 'Use a JPG, PNG or WebP image.';
+if(/too large|413|Payload/i.test(m))return 'That image is too large.';
+if(/Failed to fetch|NetworkError|network/i.test(m))return 'No connection. Check your internet and try again.';
+try{console.warn('STYLEPLAY:',m)}catch(x){}return 'Something went wrong. Please try again.'}
+async function svFn(name,body){var r=await AU.sb.functions.invoke(name,{body:body});if(!r.error)return r.data||{};
+var code='server_error';try{var j=await r.error.context.json();if(j&&j.error)code=j.error}catch(x){if(/Failed to fetch|NetworkError/i.test(String(r.error.message)))throw new Error('Failed to fetch')}
+throw {fn:code,message:SV_FN[code]||SV_FN.server_error}}
+function svErr(e){return e&&e.fn?e.message:svDbMsg(e)}
+async function svQ(p){var r=await p;if(r.error)throw r.error;return r.data}
+// ---------- shared page frame ----------
+function svFrame(title,sub,inner){return '<div class="w pg"><a class="btn g s" href="#/" style="margin-bottom:14px">← Back to site</a><h1 class="h2" style="margin-bottom:6px">'+title+'</h1>'+(sub?'<p class="mu" style="margin-bottom:16px">'+sub+'</p>':'')+inner+'</div>'}
+function svGate(title){if(AU.mode!='ready')return svFrame(title,'','<p style="margin-top:12px">'+(AU.mode=='loading'?'Connecting…':'Accounts are not connected on this version yet.')+'</p>');
+if(!AU.ready)return svFrame(title,'','<p style="margin-top:12px">Checking your account…</p>');
+if(!AU.user)return svFrame(title,'Sign in to continue.','<div class="rw" style="margin-left:0;justify-content:flex-start"><a class="btn" href="#/login">Sign in</a><a class="btn g" href="#/signup">Create account</a></div>');return ''}
+function svIn(label,k,v,type,extra){return '<label class="fl"><span class="mu">'+label+'</span><input class="in" data-sv="'+k+'" type="'+(type||'text')+'" value="'+esc(v==null?'':v)+'"'+(extra||'')+'></label>'}
+function svTa(label,k,v,max){return '<label class="fl"><span class="mu">'+label+'</span><textarea class="in ta" data-sv="'+k+'" maxlength="'+(max||1000)+'">'+esc(v||'')+'</textarea></label>'}
+function svCk(label,k,v){return '<label style="display:flex;gap:10px;align-items:flex-start;margin:10px 0;cursor:pointer"><input type="checkbox" data-sv="'+k+'"'+(v?' checked':'')+' style="width:20px;height:20px;flex:none;margin-top:2px"><span>'+label+'</span></label>'}
+function svBtn(cls,a,id,label,dis){return '<button type="button" class="btn '+cls+'" data-a="'+a+'"'+(id!=null?' data-id="'+esc(id)+'"':'')+(dis||SV.busy||SA.busy?' disabled aria-disabled="true"':'')+'>'+label+'</button>'}
+function svNote(t){return t?'<p class="bdg2" style="display:block;margin:8px 0;white-space:normal">STYLE PLAY note: '+esc(t)+'</p>':''}
+// ====================================== SELLER CENTER ======================================
+async function svLoad(){if(SV.loading||!AU.sb||!AU.user)return;SV.loading=true;SV.err='';var uid=AU.user.id;
+try{var sb=AU.sb,r=await Promise.all([sb.from('store_members').select('store_id,role').eq('user_id',uid),
+sb.from('seller_applications').select('*').eq('applicant_id',uid).order('created_at',{ascending:false}).limit(1),
+sb.from('categories').select('slug,name,slot').order('sort'),sb.from('styles').select('slug,name').order('sort')]);
+r.forEach(function(x){if(x.error)throw x.error});if(SV.uid!==uid)return;
+SV.mem=r[0].data||[];SV.app=(r[1].data||[])[0]||null;SV.cats=r[2].data||[];SV.stys=r[3].data||[];
+var ids=SV.mem.map(function(m){return m.store_id});SV.stores=ids.length?await svQ(sb.from('stores').select('id,slug,name,description,logo_path,website,status,is_demo').in('id',ids)):[];
+if(SV.stores.length&&!SV.stores.some(function(s){return s.id==SV.sid}))SV.sid=SV.stores[0].id;
+if(SV.sid)await svLoadStore();SV.loaded=true}catch(e){SV.err=svErr(e)}finally{SV.loading=false}if(auRoute()=='partner')render()}
+async function svLoadStore(){var sb=AU.sb,sid=SV.sid;
+var ps=await svQ(sb.from('products').select('id,name,description,category_slug,gender,price_amount,product_url,status,review_note,attributes,updated_at,published_at').eq('store_id',sid).order('updated_at',{ascending:false}).limit(500));
+var ids=ps.map(function(p){return p.id}),im=[],st=[];
+if(ids.length){var q=await Promise.all([sb.from('product_images').select('id,product_id,storage_path,position,is_primary').in('product_id',ids).order('position'),sb.from('product_styles').select('product_id,style_slug').in('product_id',ids)]);q.forEach(function(x){if(x.error)throw x.error});im=q[0].data;st=q[1].data}
+SV.prods=ps;SV.imgs={};im.forEach(function(i){(SV.imgs[i.product_id]=SV.imgs[i.product_id]||[]).push(i)});SV.pst={};st.forEach(function(x){(SV.pst[x.product_id]=SV.pst[x.product_id]||[]).push(x.style_slug)});
+SV.priv=null;if(svRole()=='owner'){var pv=await svQ(sb.from('store_private').select('contact_email,phone,social').eq('store_id',sid));SV.priv=pv[0]||null}}
+function svRole(){var m=SV.mem.filter(function(x){return x.store_id==SV.sid})[0];return m?m.role:null}
+function svStore(){return SV.stores.filter(function(s){return s.id==SV.sid})[0]||null}
+function svPage(){var g=svGate('Partner Center');if(g)return g;
+if(!SV.loaded){if(!SV.loading&&!SV.err)setTimeout(svLoad,0);return svFrame('Partner Center','',SV.err?'<p class="bdg2" style="display:block;white-space:normal">'+esc(SV.err)+'</p>'+svBtn('g','sv_reload',null,'Try again'):'<p style="margin-top:12px">Loading your store…</p>')}
+var p=decodeURIComponent(location.hash.slice(1)).split('/');if(p[2]=='invite'&&p[3]&&!SV.code)SV.code=p[3].slice(0,200);
+if(!SV.stores.length)return svFrame('Partner Center','Sell your fashion products on STYLE PLAY.',svApply());
+var s=svStore(),own=svRole()=='owner',tabs=[['prod','My Products'],['edit',SV.ed&&SV.ed.id?'Edit Product':'Add Product']].concat(own?[['store','Store Profile']]:[]);
+var pick=SV.stores.length>1?'<label class="fl" style="max-width:360px"><span class="mu">Store</span><select class="in" data-a2="sv_pick">'+SV.stores.map(function(x){return '<option value="'+esc(x.id)+'"'+(x.id==SV.sid?' selected':'')+'>'+esc(x.name)+'</option>'}).join('')+'</select></label>':'';
+var head='<div class="it" style="padding:12px 16px"><div class="i"><b>'+esc(s.name)+'</b> '+svPill(s.status)+'<br><span class="mu">'+(own?'Owner':'Editor')+(s.is_demo?' · Demo store':'')+'</span></div></div>'+(s.status!='active'?'<p class="bdg2" style="display:block;white-space:normal;margin:8px 0">This store is paused by STYLE PLAY. Its products are not shown on the site and you cannot add new ones right now.</p>':'');
+var body=SV.tab=='edit'?svForm():SV.tab=='store'&&own?svStoreForm():svList();
+return svFrame('Partner Center','Your products stay hidden until the STYLE PLAY team approves them.',pick+head+'<div class="ch" style="margin-top:12px">'+tabs.map(function(t){return '<button type="button" class="'+(SV.tab==t[0]?'on':'')+'" data-a="sv_tab" data-id="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div>'+body)}
+// ---------- application ----------
+function svApplyState(){var a=SV.app;if(!SV.ap){var b=a&&(a.status=='draft'||a.status=='changes_requested')?a:{};SV.ap={store_name:b.store_name||'',legal_name:b.legal_name||'',tax_id:b.tax_id||'',website:b.website||'',contact_email:b.contact_email||(AU.user&&AU.user.email)||'',phone:b.phone||'',social:b.social||'',description:b.description||'',image_rights:!!b.image_rights,terms_accepted:!!b.terms_accepted}}return SV.ap}
+function svApply(){var a=SV.app,inv='<div class="cd" style="padding:18px;max-width:680px;margin-top:16px"><h3 style="margin:0 0 6px">Have an invite code?</h3><p class="mu" style="margin-bottom:10px">If STYLE PLAY sent you a code for an existing store, enter it here. It works with the e-mail address the code was sent to.</p>'+svIn('Invite code','code',SV.code,'text',' autocomplete="off" maxlength="200"')+svBtn('','sv_invite',null,'Join store')+'</div>';
+if(a&&a.status=='submitted')return '<div class="cd" style="padding:18px;max-width:680px"><h3 style="margin:0 0 6px">Application sent '+svPill('submitted')+'</h3><p>We received the application for <b>'+esc(a.store_name||'')+'</b> on '+esc(svDate(a.submitted_at))+'. The STYLE PLAY team will review it. You can close this page; your store will appear here once it is approved.</p>'+svBtn('g s','sv_reload',null,'Check again')+'</div>'+inv;
+var f=svApplyState(),again=a&&a.status=='rejected',ch=a&&a.status=='changes_requested';
+return (ch?svNote(a.review_note)||'':'')+(again?'<p class="bdg2" style="display:block;white-space:normal;margin-bottom:10px">Your last application was not approved.'+(a.review_note?' Note: '+esc(a.review_note):'')+' You can send a new one.</p>':'')
++'<div class="cd" style="padding:18px;max-width:680px"><h3 style="margin:0 0 4px">'+(ch?'Update your application':'Apply to open a store')+'</h3><p class="mu" style="margin-bottom:12px">Fields marked * are required to send. You can save a draft at any time.</p>'
++svIn('Store name *','ap.store_name',f.store_name,'text',' maxlength="80"')+svIn('Registered business or owner name *','ap.legal_name',f.legal_name,'text',' maxlength="120"')+svIn('Tax ID or ID card number *','ap.tax_id',f.tax_id,'text',' maxlength="20" autocomplete="off"')
++svIn('Store website or shop page (https://…) *','ap.website',f.website,'url',' maxlength="500"')+svIn('Contact e-mail *','ap.contact_email',f.contact_email,'email',' maxlength="254"')+svIn('Phone','ap.phone',f.phone,'tel',' maxlength="30"')+svIn('Social account (Instagram, TikTok, LINE…)','ap.social',f.social,'text',' maxlength="200"')+svTa('About your store','ap.description',f.description,1000)
++svCk('I own these product images or have permission to use them on STYLE PLAY. *','ap.image_rights',f.image_rights)+(typeof PTERMS=='string'?PTERMS:'')+svCk('I agree to the Partner Terms. *','ap.terms_accepted',f.terms_accepted)
++'<div class="rw" style="margin-left:0">'+svBtn('g','sv_app','draft','Save draft')+svBtn('','sv_app','submit',ch?'Send again':'Send application')+'</div></div>'+inv}
+function svAppCheck(f){var e=[];if(String(f.store_name).trim().length<2)e.push('store name');if(String(f.legal_name).trim().length<2)e.push('business or owner name');if(String(f.tax_id).replace(/[\s-]/g,'').length<5)e.push('tax ID');if(!svHttps(f.website))e.push('website (https://)');if(!svEmail(f.contact_email))e.push('contact e-mail');if(!f.image_rights)e.push('image permission');if(!f.terms_accepted)e.push('Partner Terms');return e}
+async function svAppSave(mode){var f=svApplyState(),a=SV.app,sub=mode=='submit';
+if(sub){var e=svAppCheck(f);if(e.length){toast('Please complete: '+e.join(', '));return}}
+else if(f.store_name&&String(f.store_name).trim().length<2){toast('Store name needs at least 2 characters');return}
+if(f.website&&!svHttps(f.website)){toast('Links must start with https://');return}if(f.contact_email&&!svEmail(f.contact_email)){toast('Check the e-mail address.');return}
+var row={store_name:String(f.store_name).trim()||null,legal_name:String(f.legal_name).trim()||null,tax_id:String(f.tax_id).trim()||null,website:String(f.website).trim()||null,contact_email:String(f.contact_email).trim().toLowerCase()||null,phone:String(f.phone).trim()||null,social:String(f.social).trim()||null,description:String(f.description).trim()||null,image_rights:!!f.image_rights,terms_accepted:!!f.terms_accepted,terms_version:typeof PTERMS_V=='string'?PTERMS_V:null,status:sub?'submitted':'draft'};
+if(a&&(a.status=='draft'||a.status=='changes_requested'))await svQ(AU.sb.from('seller_applications').update(row).eq('id',a.id));
+else{row.applicant_id=AU.user.id;await svQ(AU.sb.from('seller_applications').insert(row))}
+toast(sub?'Application sent':'Draft saved');SV.ap=null;SV.loaded=false;await svLoad()}
+// ---------- product list ----------
+function svThumb(pid){var i=(SV.imgs[pid]||[])[0],u=i?svImgUrl('product-images',i.storage_path):'';return u?'<img src="'+esc(u)+'" alt="" style="width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:14px;display:block">':'<div style="width:100%;aspect-ratio:4/5;border-radius:14px;background:linear-gradient(135deg,#eef0f8,#f8e8ef);display:flex;align-items:center;justify-content:center" class="mu">No photo</div>'}
+function svCatName(slug){var c=SV.cats.filter(function(x){return x.slug==slug})[0];return c?c.name:slug}
+function svList(){var L=SV.prods,s=svStore(),act=s&&s.status=='active';
+if(!L.length)return '<p class="mu" style="margin:12px 0">No products yet.</p>'+(act?svBtn('','sv_new',null,'Add your first product'):'');
+var c={};L.forEach(function(p){c[p.status]=(c[p.status]||0)+1});
+return '<p class="mu" style="margin:8px 0">'+['published','pending_review','changes_requested','draft','hidden','rejected'].filter(function(k){return c[k]}).map(function(k){return '<span>'+esc(SV_ST[k])+'</span>: '+c[k]}).join(' · ')+'</p>'+(act?svBtn('s','sv_new',null,'+ Add product'):'')
++'<div class="g sg" style="margin-top:12px">'+L.map(function(p){var st=p.status,b=[];
+b.push(svBtn('g s','sv_edit',p.id,'Edit'));
+if(['draft','changes_requested','hidden','rejected'].indexOf(st)>-1&&act)b.push(svBtn('s','sv_submit',p.id,'Send for review'));
+if(st=='published'||st=='pending_review')b.push(svBtn('g s','sv_hide',p.id,'Hide'));
+if(st=='draft'||st=='rejected')b.push(svBtn('d s','sv_del',p.id,SV.del==p.id?'Tap again to delete':'Delete'));
+return '<article class="cd">'+svThumb(p.id)+'<h3 class="pn">'+esc(p.name)+'</h3><p class="mu">'+esc(svCatName(p.category_slug))+' · '+m$(+p.price_amount||0)+'</p><p style="margin:6px 4px">'+svPill(st)+'</p>'
++(st=='pending_review'?'<p class="mu" style="margin:2px 4px">Waiting for the STYLE PLAY team.</p>':'')+(st=='published'?'<p class="mu" style="margin:2px 4px">Live on STYLE PLAY.</p>':'')+(p.review_note&&st!='published'?svNote(p.review_note):'')
++'<div class="rw" style="margin-left:0;flex-wrap:wrap;gap:6px">'+b.join('')+'</div></article>'}).join('')+'</div>'}
+// ---------- product form ----------
+function svEdOpen(p){var a=p&&p.attributes&&typeof p.attributes=='object'?p.attributes:{};
+SV.ed=p?{id:p.id,status:p.status,name:p.name||'',price:p.price_amount==null?'':String(+p.price_amount),category:p.category_slug||'',gender:p.gender||'unisex',url:p.product_url||'',description:p.description||'',brand:a.brand||'',color:a.color||'',sizes:Array.isArray(a.sizes)?a.sizes.join(', '):'',styles:(SV.pst[p.id]||[]).slice()}
+:{id:null,status:'draft',name:'',price:'',category:(SV.cats[0]||{}).slug||'',gender:'unisex',url:'',description:'',brand:'',color:'',sizes:'',styles:[]};SV.tab='edit'}
+function svForm(){if(!SV.ed)svEdOpen(null);var e=SV.ed,im=e.id?(SV.imgs[e.id]||[]):[],live=e.status=='published';
+return '<div class="cd" style="padding:18px;max-width:680px;margin-top:12px"><h3 style="margin:0 0 4px">'+(e.id?'Edit product':'Add product')+' '+(e.id?svPill(e.status):'')+'</h3>'
++(live?'<p class="mu" style="margin-bottom:10px">This product is live. If you change its name, price, link, category or gender, it goes back to review and is hidden until approved.</p>':'')
++'<p class="mu" style="margin:8px 0 6px">Photos (up to 8; the first one is the main photo)</p><div class="rw" style="margin-left:0;justify-content:flex-start;gap:10px;flex-wrap:wrap">'
++im.map(function(i){var u=svImgUrl('product-images',i.storage_path);return '<div style="width:110px"><img src="'+esc(u)+'" alt="" style="width:110px;aspect-ratio:4/5;object-fit:cover;border-radius:12px;display:block"><button type="button" class="btn d s" data-a="sv_rmimg" data-id="'+esc(i.id)+'" style="margin-top:6px"'+(SV.busy?' disabled':'')+'>Remove</button></div>'}).join('')+'</div>'
++(im.length<8?'<label class="btn g" style="cursor:pointer;margin:8px 0 14px;display:inline-flex;align-items:center">'+(SV.busy?'Uploading…':'Add photos')+'<input type="file" data-svfile="product" accept="image/jpeg,image/png,image/webp" multiple hidden'+(SV.busy?' disabled':'')+'></label>'+(e.id?'':'<p class="mu" style="margin:-6px 0 12px">Adding a photo saves the product as a draft first.</p>'):'')
++svIn('Product name *','ed.name',e.name,'text',' maxlength="120"')+svIn('Price (THB) *','ed.price',e.price,'number',' min="0" step="1" inputmode="decimal"')
++'<label class="fl"><span class="mu">Category *</span><select class="in" data-sv="ed.category">'+SV.cats.map(function(c){return '<option value="'+esc(c.slug)+'"'+(e.category==c.slug?' selected':'')+'>'+esc(c.name)+'</option>'}).join('')+'</select></label>'
++'<label class="fl"><span class="mu">Gender</span><select class="in" data-sv="ed.gender">'+[['women','Women'],['men','Men'],['unisex','Unisex']].map(function(o){return '<option value="'+o[0]+'"'+(e.gender==o[0]?' selected':'')+'>'+o[1]+'</option>'}).join('')+'</select></label>'
++svIn('Link to this product in your shop (https://…) *','ed.url',e.url,'url',' maxlength="600"')+svTa('Description','ed.description',e.description,2000)
++svIn('Brand','ed.brand',e.brand,'text',' maxlength="80"')+svIn('Color','ed.color',e.color,'text',' maxlength="40"')+svIn('Sizes (comma separated, e.g. S, M, L)','ed.sizes',e.sizes,'text',' maxlength="120"')
++'<p class="mu" style="margin:6px 0">Style (pick one or more)</p><div class="ch" style="flex-wrap:wrap">'+SV.stys.map(function(s){return '<button type="button" class="'+(e.styles.indexOf(s.slug)>-1?'on':'')+'" data-a="sv_sty" data-id="'+esc(s.slug)+'" aria-pressed="'+(e.styles.indexOf(s.slug)>-1)+'">'+esc(s.name)+'</button>'}).join('')+'</div>'
++'<div class="rw" style="margin-left:0;margin-top:10px;flex-wrap:wrap">'+(live?svBtn('','sv_save','keep','Save changes'):svBtn('g','sv_save','draft','Save draft')+svBtn('','sv_save','submit','Send for review'))+svBtn('g','sv_cancel',null,'Cancel')+'</div></div>'}
+function svEdCheck(e,submit){var err=[];if(String(e.name).trim().length<2)err.push('product name');var pr=Number(e.price);if(e.price===''||!isFinite(pr)||pr<0||pr>9999999)err.push('price');if(!e.category)err.push('category');
+var needUrl=submit||(e.id&&['draft','hidden','rejected'].indexOf(e.status)<0);if(e.url&&!svHttps(e.url))err.push('shop link must start with https://');else if(needUrl&&!e.url)err.push('shop link');if(submit&&!e.styles.length)err.push('style');return err}
+async function svEdSave(mode,quiet){var e=SV.ed,sb=AU.sb,submit=mode=='submit',err=svEdCheck(e,submit);if(err.length){toast('Please complete: '+err.join(', '));return false}
+var sizes=String(e.sizes||'').split(',').map(function(x){return x.trim().slice(0,12)}).filter(Boolean).slice(0,20);
+var row={name:String(e.name).trim(),description:String(e.description||'').trim()||null,category_slug:e.category,gender:e.gender,price_amount:Math.round(Number(e.price)*100)/100,product_url:String(e.url||'').trim()||null,
+attributes:{brand:String(e.brand||'').trim().slice(0,80),color:String(e.color||'').trim().slice(0,40),sizes:sizes}};
+if(submit)row.status='pending_review';
+if(e.id){await svQ(sb.from('products').update(row).eq('id',e.id))}
+else{row.store_id=SV.sid;row.status=submit?'pending_review':'draft';var ins=await svQ(sb.from('products').insert(row).select('id,status').single());e.id=ins.id;e.status=ins.status}
+var cur=SV.pst[e.id]||[],add=e.styles.filter(function(s){return cur.indexOf(s)<0}),rm=cur.filter(function(s){return e.styles.indexOf(s)<0});
+if(rm.length)await svQ(sb.from('product_styles').delete().eq('product_id',e.id).in('style_slug',rm));
+if(add.length)await svQ(sb.from('product_styles').insert(add.map(function(s){return{product_id:e.id,style_slug:s}})));
+await svLoadStore();var p=SV.prods.filter(function(x){return x.id==e.id})[0];if(p)e.status=p.status;
+if(!quiet){toast(submit?'Sent for review':p&&p.status=='pending_review'&&mode=='keep'?'Saved. The changes go to review first.':'Saved');SV.ed=null;SV.tab='prod'}return true}
+// ---------- photos ----------
+async function svShrink(f){if(!/^image\/(jpeg|png|webp)$/.test(f.type))throw new Error('mime');
+var big=f.size>1500000,bmp=null;try{if(window.createImageBitmap)bmp=await createImageBitmap(f)}catch(x){bmp=null}
+if(!bmp){if(f.size>5000000)throw new Error('too large');return{blob:f,type:f.type,ext:f.type.split('/')[1].replace('jpeg','jpg')}}
+var m=Math.max(bmp.width,bmp.height),sc=m>1600?1600/m:1;if(sc==1&&!big){if(bmp.close)bmp.close();return{blob:f,type:f.type,ext:f.type.split('/')[1].replace('jpeg','jpg')}}
+var c=document.createElement('canvas');c.width=Math.round(bmp.width*sc);c.height=Math.round(bmp.height*sc);c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);if(bmp.close)bmp.close();
+var b=await new Promise(function(res){c.toBlob(res,'image/jpeg',0.86)});if(!b)throw new Error('mime');if(b.size>5000000)throw new Error('too large');return{blob:b,type:'image/jpeg',ext:'jpg'}}
+function svRand(){var a=new Uint8Array(8);crypto.getRandomValues(a);return Array.prototype.map.call(a,function(x){return('0'+x.toString(16)).slice(-2)}).join('')}
+async function svAddPhotos(files){var e=SV.ed;if(!e)return;if(!e.id){var ok=await svEdSave('draft',true);if(!ok)return}
+var sb=AU.sb,have=(SV.imgs[e.id]||[]).slice(),used=have.map(function(i){return i.position}),n=0;
+for(var k=0;k<files.length;k++){var pos=-1;for(var q=0;q<8;q++)if(used.indexOf(q)<0){pos=q;break}if(pos<0){toast('Up to 8 photos per product');break}
+var s=await svShrink(files[k]),path=SV.sid+'/'+e.id+'/'+svRand()+'.'+s.ext;
+var up=await sb.storage.from('product-images').upload(path,s.blob,{contentType:s.type,upsert:false});if(up.error)throw up.error;
+var r=await sb.from('product_images').insert({product_id:e.id,storage_path:path,position:pos,is_primary:!have.some(function(i){return i.is_primary})&&n==0&&!have.length});
+if(r.error){await sb.storage.from('product-images').remove([path]);throw r.error}used.push(pos);n++}
+await svLoadStore();if(n)toast(n==1?'Photo added':n+' photos added')}
+async function svRmPhoto(id){var e=SV.ed,im=(SV.imgs[e.id]||[]).filter(function(i){return i.id==id})[0];if(!im)return;var sb=AU.sb;
+await svQ(sb.from('product_images').delete().eq('id',id));var rs=await sb.storage.from('product-images').remove([im.storage_path]);
+if(im.is_primary){var rest=(SV.imgs[e.id]||[]).filter(function(i){return i.id!=id});if(rest.length)await svQ(sb.from('product_images').update({is_primary:true}).eq('id',rest[0].id))}
+await svLoadStore();toast(rs&&rs.error?'Photo removed from the product':'Photo removed')}
+// ---------- store profile (owners) ----------
+function svStoreForm(){var s=svStore(),pv=SV.priv||{};if(!SV.st||SV.st.id!=s.id)SV.st={id:s.id,name:s.name||'',description:s.description||'',website:s.website||''};if(!SV.pv||SV.pv.id!=s.id)SV.pv={id:s.id,contact_email:pv.contact_email||'',phone:pv.phone||'',social:pv.social||''};
+var lu=svImgUrl('store-logos',s.logo_path);
+return '<div class="cd" style="padding:18px;max-width:680px;margin-top:12px"><h3 style="margin:0 0 10px">Store profile</h3><p class="mu" style="margin-bottom:6px">Logo</p>'+(lu?'<img src="'+esc(lu)+'" alt="" style="width:88px;height:88px;object-fit:cover;border-radius:50%;display:block;margin-bottom:8px">':'')
++'<label class="btn g s" style="cursor:pointer;margin-bottom:14px;display:inline-flex;align-items:center">'+(lu?'Change logo':'Upload logo')+'<input type="file" data-svfile="logo" accept="image/jpeg,image/png,image/webp" hidden></label>'
++svIn('Store name','st.name',SV.st.name,'text',' maxlength="80"')+svTa('About the store (shown on the site)','st.description',SV.st.description,1000)+svIn('Website (https://…)','st.website',SV.st.website,'url',' maxlength="500"')
++'<h3 style="margin:16px 0 6px">Private contact</h3><p class="mu" style="margin-bottom:10px">Only your store team and STYLE PLAY can see this.</p>'+svIn('Contact e-mail','pv.contact_email',SV.pv.contact_email,'email',' maxlength="254"')+svIn('Phone','pv.phone',SV.pv.phone,'tel',' maxlength="30"')+svIn('Social account','pv.social',SV.pv.social,'text',' maxlength="200"')
++'<div class="rw" style="margin-left:0">'+svBtn('','sv_store',null,'Save store profile')+'</div></div>'}
+async function svStoreSave(){var f=SV.st,p=SV.pv,sb=AU.sb;if(String(f.name).trim().length<2){toast('Store name needs at least 2 characters');return}if(f.website&&!svHttps(f.website)){toast('Links must start with https://');return}if(p.contact_email&&!svEmail(p.contact_email)){toast('Check the e-mail address.');return}
+await svQ(sb.from('stores').update({name:String(f.name).trim(),description:String(f.description||'').trim()||null,website:String(f.website||'').trim()||null}).eq('id',SV.sid));
+var pr={contact_email:String(p.contact_email||'').trim().toLowerCase()||null,phone:String(p.phone||'').trim()||null,social:String(p.social||'').trim()||null};
+if(SV.priv)await svQ(sb.from('store_private').update(pr).eq('store_id',SV.sid));else{pr.store_id=SV.sid;await svQ(sb.from('store_private').insert(pr))}
+SV.st=null;SV.pv=null;SV.loaded=false;await svLoad();toast('Store profile saved')}
+async function svLogo(f){var s=await svShrink(f),sb=AU.sb,st=svStore(),path=SV.sid+'/logo-'+svRand()+'.'+s.ext;
+var up=await sb.storage.from('store-logos').upload(path,s.blob,{contentType:s.type,upsert:false});if(up.error)throw up.error;
+var r=await sb.from('stores').update({logo_path:path}).eq('id',SV.sid);if(r.error){await sb.storage.from('store-logos').remove([path]);throw r.error}
+if(st&&st.logo_path&&st.logo_path!=path)await sb.storage.from('store-logos').remove([st.logo_path]);SV.loaded=false;await svLoad();toast('Logo updated')}
+// ====================================== ADMIN ======================================
+async function saLoad(){if(SA.loading||!AU.sb||!AU.user)return;SA.loading=true;SA.err='';var uid=AU.user.id,sb=AU.sb;
+try{var me=await svQ(sb.from('user_roles').select('role').eq('user_id',uid));if(SA.uid!==uid)return;SA.admin=me.some(function(r){return r.role=='admin'});
+if(SA.admin){var r=await Promise.all([sb.from('seller_applications').select('*').order('updated_at',{ascending:false}).limit(200),
+sb.from('products').select('id,store_id,name,description,category_slug,gender,price_amount,product_url,status,review_note,attributes,updated_at,published_at').order('updated_at',{ascending:false}).limit(500),
+sb.from('stores').select('id,slug,name,status,is_demo,website,created_at').order('created_at',{ascending:false}).limit(500),
+sb.from('store_private').select('store_id,contact_email,phone,social'),
+sb.from('support_tickets').select('*').order('created_at',{ascending:false}).limit(200),
+sb.from('categories').select('slug,name').order('sort'),sb.from('styles').select('slug,name').order('sort')]);
+r.forEach(function(x){if(x.error)throw x.error});SA.apps=r[0].data;SA.prods=r[1].data;SA.stores=r[2].data;SA.priv={};r[3].data.forEach(function(x){SA.priv[x.store_id]=x});SA.tickets=r[4].data;SV.cats=SV.cats.length?SV.cats:r[5].data;SV.stys=SV.stys.length?SV.stys:r[6].data;
+var ids=SA.prods.map(function(p){return p.id}).slice(0,500);SA.imgs={};SA.pst={};
+if(ids.length){var q=await Promise.all([sb.from('product_images').select('product_id,storage_path,position').in('product_id',ids).order('position'),sb.from('product_styles').select('product_id,style_slug').in('product_id',ids)]);q.forEach(function(x){if(x.error)throw x.error});
+q[0].data.forEach(function(i){(SA.imgs[i.product_id]=SA.imgs[i.product_id]||[]).push(i)});q[1].data.forEach(function(x){(SA.pst[x.product_id]=SA.pst[x.product_id]||[]).push(x.style_slug)})}}
+SA.loaded=true}catch(e){SA.err=svErr(e)}finally{SA.loading=false}if(auRoute()=='admin')render()}
+function saPage(){var g=svGate('Admin');if(g)return g;
+if(!SA.loaded){if(!SA.loading&&!SA.err)setTimeout(saLoad,0);return svFrame('Admin','',SA.err?'<p class="bdg2" style="display:block;white-space:normal">'+esc(SA.err)+'</p>'+svBtn('g','sa_reload',null,'Try again'):'<p style="margin-top:12px">Loading…</p>')}
+if(!SA.admin)return svFrame('Admin','','<p style="margin-top:12px">This account is not a STYLE PLAY admin.</p><p class="mu">Signed in as '+esc(AU.user.email||'')+'</p>');
+var na=SA.apps.filter(function(a){return a.status=='submitted'}).length,np=SA.prods.filter(function(p){return p.status=='pending_review'}).length,nt=SA.tickets.filter(function(t){return t.status=='open'||t.status=='in_progress'}).length;
+var tabs=[['apps','Store applications',na],['review','Products to review',np],['live','Live products',null],['stores','Stores',null],['tickets','Reports',nt]];
+var body=SA.tab=='review'?saProds('pending_review'):SA.tab=='live'?saProds('published'):SA.tab=='stores'?saStores():SA.tab=='tickets'?saTickets():saApps();
+return svFrame('Admin','Signed in as '+esc(AU.user.email||''),'<div class="rw" style="margin:0 0 6px;justify-content:flex-start">'+svBtn('g s','sa_reload',null,'Refresh')+'</div><div class="ch">'+tabs.map(function(t){return '<button type="button" class="'+(SA.tab==t[0]?'on':'')+'" data-a="sa_tab" data-id="'+t[0]+'">'+t[1]+(t[2]?' ('+t[2]+')':'')+'</button>'}).join('')+'</div>'+body)}
+function saNote(id,ph){return '<textarea class="in ta" data-sa="note.'+esc(id)+'" maxlength="1000" placeholder="'+esc(ph||'Note to the store (optional)')+'" style="height:64px">'+esc(SA.note[id]||'')+'</textarea>'}
+function saRow(k,v){return v?'<dt>'+k+'</dt><dd>'+v+'</dd>':''}
+function saLink(u){var s=safeUrl(u||'');return s?'<a href="'+esc(s)+'" target="_blank" rel="noopener noreferrer"><u>'+esc(s.length>60?s.slice(0,57)+'…':s)+'</u></a>':''}
+function saApps(){var L=SA.apps.filter(function(a){return a.status=='submitted'}),O=SA.apps.filter(function(a){return a.status!='submitted'&&a.status!='draft'}).slice(0,30);
+return (L.length?L.map(function(a){return '<article class="cd" style="padding:16px;margin-top:12px"><h3 style="margin:0 0 6px">'+esc(a.store_name||'')+' '+svPill(a.status)+'</h3><dl>'
++saRow('Business / owner',esc(a.legal_name||''))+saRow('Tax ID',esc(a.tax_id||''))+saRow('Website',saLink(a.website))+saRow('E-mail',esc(a.contact_email||''))+saRow('Phone',esc(a.phone||''))+saRow('Social',esc(a.social||''))+saRow('About',esc(a.description||''))
++saRow('Sent',esc(svDate(a.submitted_at)))+saRow('Image permission',a.image_rights?'Yes':'No')+saRow('Terms',a.terms_accepted?'Accepted '+esc(a.terms_version||''):'No')+'</dl>'+saNote(a.id)
++'<div class="rw" style="margin-left:0;flex-wrap:wrap">'+svBtn('s','sa_app',a.id+'|approve','Approve')+svBtn('g s','sa_app',a.id+'|request_changes','Ask for changes')+svBtn('d s','sa_app',a.id+'|reject','Reject')+'</div></article>'}).join(''):'<p class="mu" style="margin:12px 0">No applications waiting.</p>')
++(O.length?'<h3 style="margin:18px 0 8px">Recent decisions</h3>'+O.map(function(a){return '<div class="it"><div class="i"><b>'+esc(a.store_name||'')+'</b> '+svPill(a.status)+'<br><span class="mu">'+esc(svDate(a.reviewed_at||a.updated_at))+(a.review_note?' · '+esc(a.review_note):'')+'</span></div></div>'}).join(''):'')}
+function saStoreName(id){var s=SA.stores.filter(function(x){return x.id==id})[0];return s?s.name:''}
+function saProds(st){var L=SA.prods.filter(function(p){return p.status==st}),cat=function(s){var c=SV.cats.filter(function(x){return x.slug==s})[0];return c?c.name:s},sty=function(id){return(SA.pst[id]||[]).map(function(s){var x=SV.stys.filter(function(y){return y.slug==s})[0];return x?x.name:s}).join(', ')};
+if(!L.length)return '<p class="mu" style="margin:12px 0">'+(st=='pending_review'?'No products waiting for review.':'No live products.')+'</p>';
+return '<div class="g sg" style="margin-top:12px">'+L.map(function(p){var a=p.attributes&&typeof p.attributes=='object'?p.attributes:{},im=(SA.imgs[p.id]||[]).map(function(i){return svImgUrl('product-images',i.storage_path)}).filter(Boolean);
+return '<article class="cd">'+(im.length?'<img src="'+esc(im[0])+'" alt="" style="width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:14px;display:block">'+(im.length>1?'<p class="mu" style="margin:4px">+'+(im.length-1)+' more photo'+(im.length>2?'s':'')+'</p>':''):'<p class="mu" style="margin:8px 4px">No photo</p>')
++'<h3 class="pn">'+esc(p.name)+'</h3><p class="mu">'+esc(saStoreName(p.store_id))+' · '+m$(+p.price_amount||0)+'</p><dl style="margin:6px 4px">'+saRow('Category',esc(cat(p.category_slug)))+saRow('Gender',esc(p.gender))+saRow('Style',esc(sty(p.id)))+saRow('Brand',esc(a.brand||''))+saRow('Color',esc(a.color||''))+saRow('Sizes',esc(Array.isArray(a.sizes)?a.sizes.join(', '):''))+saRow('Link',saLink(p.product_url))+'</dl>'
++(p.description?'<p style="margin:4px;white-space:pre-wrap">'+esc(p.description)+'</p>':'')+saNote(p.id,st=='published'?'Reason for hiding (shown to the store)':'Note to the store (optional)')
++'<div class="rw" style="margin-left:0;flex-wrap:wrap;gap:6px">'+(st=='pending_review'?svBtn('s','sa_prod',p.id+'|approve','Approve')+svBtn('g s','sa_prod',p.id+'|request_changes','Ask for changes')+svBtn('d s','sa_prod',p.id+'|reject','Reject'):svBtn('d s','sa_prod',p.id+'|hide','Hide from site'))+'</div></article>'}).join('')+'</div>'}
+function saStores(){var i=SA.inv,opts=SA.stores.filter(function(s){return s.status!='removed'});
+var inv='<div class="cd" style="padding:16px;margin-top:12px"><h3 style="margin:0 0 6px">Invite a store owner</h3><p class="mu" style="margin-bottom:10px">Creates a one-time code (valid 14 days) that only works for this e-mail address. Use it to hand an existing store to its real owner.</p>'
++'<label class="fl"><span class="mu">Store</span><select class="in" data-sa="inv.store"><option value="">Choose a store</option>'+opts.map(function(s){return '<option value="'+esc(s.id)+'"'+(i.store==s.id?' selected':'')+'>'+esc(s.name)+'</option>'}).join('')+'</select></label>'
++'<label class="fl"><span class="mu">Their e-mail</span><input class="in" type="email" data-sa="inv.email" value="'+esc(i.email)+'" maxlength="254"></label><label class="fl"><span class="mu">Role</span><select class="in" data-sa="inv.role"><option value="owner"'+(i.role=='owner'?' selected':'')+'>Owner</option><option value="editor"'+(i.role=='editor'?' selected':'')+'>Editor (products only)</option></select></label>'
++svBtn('s','sa_invite',null,'Create invite code')+(SA.invOut?'<div class="it" style="margin-top:12px;padding:12px"><div class="i" style="min-width:0"><b>Send this to '+esc(SA.invOut.email)+'</b><br><span class="mu">They sign in with that e-mail, open Partner Center and enter the code. It is shown only once.</span><br><code style="word-break:break-all;user-select:all">'+esc(SA.invOut.link)+'</code></div><div class="ac">'+svBtn('g s','sa_copy',null,'Copy link')+'</div></div>':'')+'</div>';
+return inv+'<h3 style="margin:18px 0 8px">All stores</h3>'+SA.stores.map(function(s){var pv=SA.priv[s.id]||{},n=SA.prods.filter(function(p){return p.store_id==s.id&&p.status=='published'}).length;
+return '<div class="it"><div class="i" style="min-width:0"><b>'+esc(s.name)+'</b> '+svPill(s.status)+(s.is_demo?' <span class="sp2" style="background:#e4e6ee">Demo</span>':'')+'<br><span class="mu">'+n+' live product'+(n==1?'':'s')+(pv.contact_email?' · '+esc(pv.contact_email):'')+(pv.phone?' · '+esc(pv.phone):'')+'</span>'+(s.website?'<br>'+saLink(s.website):'')+'</div><div class="ac">'
++(s.status=='active'?svBtn('d s','sa_store',s.id+'|paused','Pause'):s.status=='paused'?svBtn('s','sa_store',s.id+'|active','Re-activate'):'')+'</div></div>'}).join('')}
+function saTickets(){var K={contact:'Contact',report_product:'Product report',takedown:'Takedown request',store_issue:'Store issue'};
+if(!SA.tickets.length)return '<p class="mu" style="margin:12px 0">No reports yet.</p>';
+return SA.tickets.map(function(t){var p=SA.prods.filter(function(x){return x.id==t.product_id})[0],done=t.status=='resolved'||t.status=='rejected';
+return '<article class="cd" style="padding:16px;margin-top:12px"><h3 style="margin:0 0 6px">'+esc(K[t.kind]||t.kind)+' '+svPill(t.status)+'</h3><p class="mu">'+esc(svDate(t.created_at))+(t.reporter_email?' · '+esc(t.reporter_email):' · signed-in user')+(t.reason?' · '+esc(t.reason.replace('_',' ')):'')+'</p>'
++(p?'<p class="mu">Product: '+esc(p.name)+' ('+esc(saStoreName(p.store_id))+')</p>':t.store_id?'<p class="mu">Store: '+esc(saStoreName(t.store_id))+'</p>':'')+'<p style="margin:8px 0;white-space:pre-wrap">'+esc(t.message)+'</p>'
++(t.admin_note?'<p class="mu">Internal note: '+esc(t.admin_note)+'</p>':'')+(done?'':saNote(t.id,'Internal note (not sent to anyone)')+'<div class="rw" style="margin-left:0;flex-wrap:wrap">'+(t.status=='open'?svBtn('g s','sa_ticket',t.id+'|in_progress','Working on it'):'')+svBtn('s','sa_ticket',t.id+'|resolved','Resolved')+svBtn('d s','sa_ticket',t.id+'|rejected','Not valid')+'</div>')+'</article>'}).join('')}
+// ====================================== events ======================================
+async function svRun(obj,fn){if(obj.busy)return;obj.busy=true;render();try{await fn()}catch(e){toast(svErr(e))}finally{obj.busy=false;render()}}
+function svSet(root,k,t){var i=k.indexOf('.'),o=i<0?null:k.slice(0,i),f=i<0?k:k.slice(i+1),v=t.type=='checkbox'?t.checked:t.value;if(o){if(!root[o])return;root[o][f]=v}else root[f]=v}
+document.addEventListener('input',function(e){var t=e.target;if(!t||!t.getAttribute)return;var k=t.getAttribute('data-sv');if(k)svSet(SV,k,t);k=t.getAttribute('data-sa');if(k){if(k.indexOf('note.')==0)SA.note[k.slice(5)]=t.value;else svSet(SA,k,t)}});
+document.addEventListener('change',function(e){var t=e.target;if(!t||!t.getAttribute)return;var k=t.getAttribute('data-sv');if(k)svSet(SV,k,t);k=t.getAttribute('data-sa');if(k&&k.indexOf('note.')<0)svSet(SA,k,t);
+if(t.getAttribute('data-a2')=='sv_pick'){SV.sid=t.value;SV.ed=null;SV.st=null;SV.pv=null;SV.tab='prod';svRun(SV,svLoadStore);return}
+var fk=t.getAttribute('data-svfile');if(fk&&t.files&&t.files.length){var fs=Array.prototype.slice.call(t.files,0,8);t.value='';svRun(SV,function(){return fk=='logo'?svLogo(fs[0]):svAddPhotos(fs)})}});
+document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-a]'):null;if(!b||b.disabled)return;var a=b.getAttribute('data-a'),id=b.getAttribute('data-id');if(a.indexOf('sv_')&&a.indexOf('sa_'))return;e.preventDefault();e.stopPropagation();
+if(a!='sv_del')SV.del=null;
+if(a=='sv_reload'){SV.loaded=false;SV.err='';svLoad();render();return}
+if(a=='sv_tab'){if(id=='edit'&&!SV.ed)svEdOpen(null);SV.tab=id;render();return}
+if(a=='sv_new'){svEdOpen(null);render();return}
+if(a=='sv_edit'){svEdOpen(SV.prods.filter(function(p){return p.id==id})[0]);render();window.scrollTo(0,0);return}
+if(a=='sv_cancel'){SV.ed=null;SV.tab='prod';render();return}
+if(a=='sv_sty'){var s=SV.ed.styles,i=s.indexOf(id);if(i>-1)s.splice(i,1);else s.push(id);render();return}
+if(a=='sv_save'){svRun(SV,function(){return svEdSave(id)});return}
+if(a=='sv_app'){svRun(SV,function(){return svAppSave(id)});return}
+if(a=='sv_invite'){var c=String(SV.code||'').trim();if(c.length<16){toast('Enter the invite code you received');return}svRun(SV,async function(){await svFn('accept-invite',{token:c});SV.code='';toast('You joined the store');SV.loaded=false;if(location.hash.indexOf('/invite/')>-1)history.replaceState(null,'','#/partner');await svLoad()});return}
+if(a=='sv_rmimg'){svRun(SV,function(){return svRmPhoto(id)});return}
+if(a=='sv_store'){svRun(SV,svStoreSave);return}
+if(a=='sv_submit'){var p=SV.prods.filter(function(x){return x.id==id})[0];if(!p)return;if(!p.product_url){toast('Add a shop link (https://…) before sending it for review.');svEdOpen(p);render();return}if(!(SV.pst[id]||[]).length){toast('Please complete: style');svEdOpen(p);render();return}
+svRun(SV,async function(){await svQ(AU.sb.from('products').update({status:'pending_review'}).eq('id',id));await svLoadStore();toast('Sent for review')});return}
+if(a=='sv_hide'){svRun(SV,async function(){await svQ(AU.sb.from('products').update({status:'hidden'}).eq('id',id));await svLoadStore();toast('Hidden from the site')});return}
+if(a=='sv_del'){if(SV.del!=id){SV.del=id;render();return}SV.del=null;svRun(SV,async function(){var paths=(SV.imgs[id]||[]).map(function(i){return i.storage_path});await svQ(AU.sb.from('products').delete().eq('id',id));if(paths.length)await AU.sb.storage.from('product-images').remove(paths);await svLoadStore();toast('Product deleted')});return}
+// admin
+if(a=='sa_reload'){SA.loaded=false;SA.err='';saLoad();render();return}
+if(a=='sa_tab'){SA.tab=id;SA.invOut=id=='stores'?SA.invOut:null;render();return}
+var pr=String(id||'').split('|'),note=function(){return String(SA.note[pr[0]]||'').trim().slice(0,1000)||null};
+if(a=='sa_app'){if(pr[1]!='approve'&&!note()){toast('Write a short note for the store first');return}svRun(SA,async function(){await svFn('review-application',{application_id:pr[0],decision:pr[1],note:note()});delete SA.note[pr[0]];toast(pr[1]=='approve'?'Store approved':'Decision saved');SA.loaded=false;await saLoad()});return}
+if(a=='sa_prod'){if(pr[1]!='approve'&&!note()){toast('Write a short note for the store first');return}svRun(SA,async function(){await svFn('review-product',{product_id:pr[0],decision:pr[1],note:note()});delete SA.note[pr[0]];toast(pr[1]=='approve'?'Product is live':pr[1]=='hide'?'Product hidden':'Decision saved');SA.loaded=false;await saLoad()});return}
+if(a=='sa_store'){svRun(SA,async function(){await svFn('admin-action',{action:'store_status',store_id:pr[0],status:pr[1]});toast(pr[1]=='paused'?'Store paused':'Store re-activated');SA.loaded=false;await saLoad()});return}
+if(a=='sa_ticket'){svRun(SA,async function(){await svFn('admin-action',{action:'ticket',ticket_id:pr[0],status:pr[1],note:note()});delete SA.note[pr[0]];toast('Report updated');SA.loaded=false;await saLoad()});return}
+if(a=='sa_invite'){var v=SA.inv;if(!v.store){toast('Choose a store');return}if(!svEmail(v.email)){toast('Check the e-mail address.');return}
+svRun(SA,async function(){var r=await svFn('admin-action',{action:'invite',store_id:v.store,email:String(v.email).trim().toLowerCase(),role:v.role});SA.invOut={email:String(v.email).trim().toLowerCase(),link:location.origin+location.pathname+'#/partner/invite/'+r.token};SA.inv={email:'',role:'owner',store:''}});return}
+if(a=='sa_copy'){var t=SA.invOut&&SA.invOut.link;if(t&&navigator.clipboard)navigator.clipboard.writeText(t).then(function(){toast('Copied')},function(){toast('Select the link and copy it')});else toast('Select the link and copy it');return}},true);
+(function(o){for(var k in o)if(!Object.prototype.hasOwnProperty.call(TX,k))TX[k]=o[k]})({'Partner Center':'ศูนย์พาร์ทเนอร์','Sell your fashion products on STYLE PLAY.':'ขายสินค้าแฟชั่นของคุณบน STYLE PLAY','Sign in to continue.':'เข้าสู่ระบบเพื่อดำเนินการต่อ','Sign in':'เข้าสู่ระบบ','Create account':'สมัครสมาชิก','Checking your account…':'กำลังตรวจสอบบัญชี…','Loading your store…':'กำลังโหลดร้านของคุณ…','Loading…':'กำลังโหลด…','Try again':'ลองอีกครั้ง',
+'Have an invite code?':'มีรหัสเชิญไหม','Invite code':'รหัสเชิญ','Join store':'เข้าร่วมร้าน','Apply to open a store':'สมัครเปิดร้าน','Update your application':'แก้ไขใบสมัคร','Save draft':'บันทึกฉบับร่าง','Send application':'ส่งใบสมัคร','Send again':'ส่งอีกครั้ง','Check again':'ตรวจสอบอีกครั้ง',
+'Store name *':'ชื่อร้าน *','Registered business or owner name *':'ชื่อนิติบุคคลหรือชื่อเจ้าของ *','Tax ID or ID card number *':'เลขประจำตัวผู้เสียภาษีหรือเลขบัตรประชาชน *','Store website or shop page (https://…) *':'เว็บไซต์หรือหน้าร้านออนไลน์ (https://…) *','Contact e-mail *':'อีเมลติดต่อ *','Phone':'เบอร์โทร','Social account (Instagram, TikTok, LINE…)':'บัญชีโซเชียล (Instagram, TikTok, LINE…)','About your store':'เกี่ยวกับร้านของคุณ',
+'I own these product images or have permission to use them on STYLE PLAY. *':'ฉันเป็นเจ้าของรูปสินค้าหรือได้รับอนุญาตให้ใช้บน STYLE PLAY *','I agree to the Partner Terms. *':'ฉันยอมรับเงื่อนไขพาร์ทเนอร์ *',
+'My Products':'สินค้าของฉัน','Add Product':'เพิ่มสินค้า','Edit Product':'แก้ไขสินค้า','Store Profile':'โปรไฟล์ร้าน','Add product':'เพิ่มสินค้า','Edit product':'แก้ไขสินค้า','+ Add product':'+ เพิ่มสินค้า','Add your first product':'เพิ่มสินค้าชิ้นแรก','No products yet.':'ยังไม่มีสินค้า',
+'Edit':'แก้ไข','Send for review':'ส่งตรวจ','Hide':'ซ่อน','Delete':'ลบ','Tap again to delete':'แตะอีกครั้งเพื่อลบ','Save changes':'บันทึกการแก้ไข','Cancel':'ยกเลิก','Add photos':'เพิ่มรูป','Uploading…':'กำลังอัปโหลด…','Remove':'ลบรูป','No photo':'ไม่มีรูป',
+'Product name *':'ชื่อสินค้า *','Price (THB) *':'ราคา (บาท) *','Category *':'หมวดหมู่ *','Gender':'เพศ','Link to this product in your shop (https://…) *':'ลิงก์สินค้าในร้านของคุณ (https://…) *','Description':'รายละเอียด','Brand':'แบรนด์','Color':'สี','Sizes (comma separated, e.g. S, M, L)':'ไซซ์ (คั่นด้วยจุลภาค เช่น S, M, L)','Style (pick one or more)':'สไตล์ (เลือกได้หลายอัน)',
+'Waiting for the STYLE PLAY team.':'รอทีม STYLE PLAY ตรวจ','Live on STYLE PLAY.':'แสดงบน STYLE PLAY แล้ว','Owner':'เจ้าของ','Editor':'ผู้ช่วย','Store profile':'โปรไฟล์ร้าน','Logo':'โลโก้','Change logo':'เปลี่ยนโลโก้','Upload logo':'อัปโหลดโลโก้','Store name':'ชื่อร้าน','About the store (shown on the site)':'เกี่ยวกับร้าน (แสดงบนเว็บ)','Website (https://…)':'เว็บไซต์ (https://…)','Private contact':'ข้อมูลติดต่อส่วนตัว','Contact e-mail':'อีเมลติดต่อ','Social account':'บัญชีโซเชียล','Save store profile':'บันทึกโปรไฟล์ร้าน',
+'Draft':'ฉบับร่าง','Pending Review':'รอตรวจ','Needs Changes':'ต้องแก้ไข','Live':'แสดงอยู่','Hidden':'ซ่อนอยู่','Rejected':'ไม่ผ่าน','Approved':'อนุมัติแล้ว','Active':'เปิดอยู่','Paused':'พักไว้','Open':'ใหม่','In progress':'กำลังดำเนินการ','Resolved':'เสร็จแล้ว',
+'Admin':'แอดมิน','Refresh':'รีเฟรช','Store applications':'ใบสมัครร้าน','Products to review':'สินค้ารอตรวจ','Live products':'สินค้าที่แสดงอยู่','Stores':'ร้านค้า','Reports':'เรื่องแจ้ง','Approve':'อนุมัติ','Ask for changes':'ขอให้แก้ไข','Reject':'ไม่อนุมัติ','Hide from site':'ซ่อนจากเว็บ','Pause':'พักร้าน','Re-activate':'เปิดร้านอีกครั้ง',
+'No applications waiting.':'ไม่มีใบสมัครรอตรวจ','No products waiting for review.':'ไม่มีสินค้ารอตรวจ','No live products.':'ยังไม่มีสินค้าที่แสดง','Recent decisions':'การตัดสินล่าสุด','All stores':'ร้านทั้งหมด','Invite a store owner':'เชิญเจ้าของร้าน','Create invite code':'สร้างรหัสเชิญ','Copy link':'คัดลอกลิงก์','Their e-mail':'อีเมลของเขา','Role':'บทบาท','Store':'ร้าน','No reports yet.':'ยังไม่มีเรื่องแจ้ง','Working on it':'กำลังดำเนินการ','Not valid':'ไม่ใช่ปัญหาจริง',
+'This account is not a STYLE PLAY admin.':'บัญชีนี้ไม่ใช่แอดมินของ STYLE PLAY','Your products stay hidden until the STYLE PLAY team approves them.':'สินค้าจะยังไม่แสดงจนกว่าทีม STYLE PLAY จะอนุมัติ',
+'Draft saved':'บันทึกฉบับร่างแล้ว','Application sent':'ส่งใบสมัครแล้ว','Saved':'บันทึกแล้ว','Sent for review':'ส่งตรวจแล้ว','Hidden from the site':'ซ่อนจากเว็บแล้ว','Product deleted':'ลบสินค้าแล้ว','Photo added':'เพิ่มรูปแล้ว','Photo removed':'ลบรูปแล้ว','Store profile saved':'บันทึกโปรไฟล์ร้านแล้ว','Logo updated':'อัปเดตโลโก้แล้ว','You joined the store':'คุณเข้าร่วมร้านแล้ว',
+'Store approved':'อนุมัติร้านแล้ว','Product is live':'สินค้าแสดงบนเว็บแล้ว','Product hidden':'ซ่อนสินค้าแล้ว','Decision saved':'บันทึกการตัดสินแล้ว','Store paused':'พักร้านแล้ว','Store re-activated':'เปิดร้านอีกครั้งแล้ว','Report updated':'อัปเดตเรื่องแจ้งแล้ว','Copied':'คัดลอกแล้ว',
+'You do not have permission for this.':'คุณไม่มีสิทธิ์ทำรายการนี้','Something went wrong. Please try again.':'มีบางอย่างผิดพลาด กรุณาลองอีกครั้ง','No connection. Check your internet and try again.':'ไม่มีการเชื่อมต่อ ตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง','Links must start with https://':'ลิงก์ต้องขึ้นต้นด้วย https://','Check the e-mail address.':'ตรวจสอบอีเมลอีกครั้ง','Write a short note for the store first':'เขียนหมายเหตุสั้น ๆ ถึงร้านก่อน','Choose a store':'เลือกร้าน','Enter the invite code you received':'ใส่รหัสเชิญที่ได้รับ'});
 render();requestAnimationFrame(tick);auInit();
 (async function(){try{if(!window.claude){ADM=false;return}DB=await claude.use('db');AI=await claude.use('sample');UP=await claude.use('assets');DLC=await claude.use('downloads');
 if(DB)['products','styles','settings','outfits','partners','categories'].forEach(function(c){DB.collection(c).onSnapshot(function(sn){CAT[c]=sn.docs.map(function(d){var o=Object.assign({},d.data()||{});o.id=d.id;return o});applyCat()},function(){})})}catch(e){ADM=false}finally{render()}})();
