@@ -406,7 +406,7 @@ p.n=p.name;p.cat=p.category;p.sub=p.subcategory;p.st=p.style;p.br=p.brand;P[p.id
 // 'hide demo products' only applies once real products exist, and the catalogue can never end up empty
 var mine=(CAT.products||[]).filter(function(d){return !P0[d.id]&&d.published!==false&&d.category&&d.styles&&d.styles.length});
 if(set.hideDemo&&mine.length)Object.keys(P0).forEach(function(i){if(!(CAT.products||[]).some(function(d){return d.id==i}))delete P[i]});
-if(!Object.keys(P).length)P=Object.assign({},P0);
+if(!Object.keys(P).length&&window.claude)P=Object.assign({},P0);   // own site: an empty catalogue stays empty (e.g. every store paused)
 OUT.length=0;var od={},seen={};(CAT.outfits||[]).forEach(function(d){od[d.id]=d});
 function addO2(o){var it=o.it.filter(function(i){return P[i]});if(it.length){var c=Object.assign({},o);c.it=it;c.items=it;OUT.push(c)}}
 OUT0.forEach(function(o){var d=od[o.id];seen[o.id]=1;if(!d){addO2(o);return}if(d.published===false)return;addO2(mkO(d))});
@@ -1367,7 +1367,8 @@ OUT0.forEach(function(o){if(lord.indexOf(o.id)<0)odoc.push({id:o.id,published:fa
 var set={};r[7].data.forEach(function(x){if(x.key=='site'&&x.value&&typeof x.value=='object')set=x.value});
 // demo-store products come from Supabase too. Once they are there, Supabase is the full product list: built-in samples it does not have are switched off.
 var nDemo=docs.filter(function(d){return d.demo}).length,nReal=docs.length-nDemo;if(set.hideDemo&&nReal)docs=docs.filter(function(d){return !d.demo});
-if(nDemo||(set.hideDemo&&nReal)){var have={};docs.forEach(function(d){have[d.id]=1});Object.keys(P0).forEach(function(k){if(!have[k])docs.push({id:k,published:false})})}
+// built-in samples are never shown in Supabase mode: a paused store's products must disappear, not fall back to the built-in copies
+{var have={};docs.forEach(function(d){have[d.id]=1});Object.keys(P0).forEach(function(k){if(!have[k])docs.push({id:k,published:false})})}
 if(!window.claude){CAT.products=docs;CAT.partners=parts;CAT.styles=sdoc;CAT.categories=cdoc;CAT.outfits=odoc;CAT.settings=[{id:'site',hideDemo:!!set.hideDemo}];applyCat()}
 }catch(e){SBC.ready=false}finally{SBC.busy=false}}
 // absolute image links (Supabase Storage) are used as they are; anything else is a Claude asset id
