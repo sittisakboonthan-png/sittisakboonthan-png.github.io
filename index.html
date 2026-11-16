@@ -972,7 +972,7 @@ function auProfileIn(){var u=AU.user,md=u.user_metadata||{},name=auName(u),ok=!!
 return '<div class="w pg"><div class="au-pf"><h1 class="h2" style="margin-bottom:18px">'+tx('Profile')+'</h1>'+auCover((auPreset(md.cover)||{}).bg)+auAvatar(auPreset(md.avatar),name)
 +'<div class="au-id"><h2>'+esc(name)+'</h2><p class="mu">'+esc(u.email||'')+'</p><span class="au-bd '+(ok?'ok':'no')+'">'+tx(ok?'Email verified':'Email not verified')+'</span></div>'
 +'<div class="rw" style="margin:16px 0 0;justify-content:flex-start"><button class="btn s" type="button" data-au="edit">'+tx('Edit profile')+'</button></div>'+(AU.edit?auEditor():'')+auLinks()+auSaved()+'<p class="lb">'+tx('Settings')+'</p>'+auTg('n','New look alerts')+auTg('t','Show prices with tax')
-+'<p class="au-note">'+tx('Your display name, avatar and cover are saved to your account. Saved outfits and favorites stay on this device for now.')+'</p><div style="margin-top:18px"><button class="btn d" type="button" data-au="logout">'+tx('Logout')+'</button></div></div></div>'}
++'<p class="au-note">'+tx('Your display name, avatar and cover are saved to your account. Saved outfits and favorites stay on this device for now.')+'</p>'+(window.acPanel?acPanel():'')+'<div style="margin-top:18px"><button class="btn d" type="button" data-au="logout">'+tx('Logout')+'</button></div></div></div>'}
 function auProfileOut(){var w=auOff();return '<div class="w pg"><div class="au-pf"><h1 class="h2" style="margin-bottom:18px">'+tx('Profile')+'</h1><div class="cd" style="padding:26px">'+(w?'<div class="au-warn" role="status">'+tx(w)+'</div>':'')+'<h3 style="margin:0 0 6px;font-size:24px">'+tx('Your style, your space')+'</h3><p class="mu" style="margin:0 0 18px">'+tx('Log in to give your profile a name, an avatar and a cover. Browsing as a guest still works: your outfits and favorites stay on this device.')+'</p><div class="rw" style="justify-content:flex-start"><a class="btn" href="#/login">'+tx('Log in')+'</a><a class="btn g" href="#/signup">'+tx('Sign up')+'</a></div>'+auLinks()+'</div></div></div>'}
 function profile(){if(AU.mode=='loading'||(AU.mode=='ready'&&!AU.ready))return '<div class="w pg"><div class="au-pf"><h1 class="h2">'+tx('Profile')+'</h1><p class="mu" role="status">'+tx('Connecting to your account\u2026')+'</p></div></div>';return AU.user?auProfileIn():auProfileOut()}
 // ---- form behaviour ----
@@ -2265,7 +2265,7 @@ terms:[
  'การใช้เว็บไซต์ สมัครสมาชิก หรือสั่งซื้อ ถือว่าคุณยอมรับเงื่อนไขนี้และ '+lgA('refund')+' และรับทราบ '+lgA('privacy')]],
 ['2. บัญชีผู้ใช้',['ใช้อีเมลที่เป็นของคุณและข้อมูลที่ถูกต้อง เก็บรหัสผ่านเป็นความลับ และแจ้งเราทันทีหากสงสัยว่ามีผู้อื่นใช้บัญชีของคุณ',
  'หากคุณอายุต่ำกว่า 20 ปี ควรได้รับความยินยอมจากผู้ปกครองก่อนสั่งซื้อ',
- 'คุณขอปิดบัญชีได้ทุกเมื่อผ่านช่องทางติดต่อด้านล่าง เราอาจเก็บข้อมูลคำสั่งซื้อไว้ต่อตามที่ระบุใน '+lgA('privacy')]],
+ 'คุณลบบัญชีได้เองทุกเมื่อที่หน้าโปรไฟล์ (เว้นแต่ยังมีร้านค้า หรือมีคำสั่งซื้อที่จ่ายแล้วแต่ยังไม่เสร็จ) ข้อมูลคำสั่งซื้อเดิมจะเก็บไว้ต่อตามที่ระบุใน '+lgA('privacy')]],
 ['3. การสั่งซื้อและการชำระเงิน',['ราคาที่ต้องจ่ายคือราคาสินค้าและค่าส่งของแต่ละร้านที่แสดงตอนยืนยันคำสั่งซื้อ ถ้าสั่งจากหลายร้าน จะแยกเป็นคำสั่งซื้อละร้าน และจ่ายแยกกัน',
  'คุณ<b>โอนเงินให้ร้านค้าโดยตรง</b>ผ่านพร้อมเพย์ของร้านที่แสดงในหน้าคำสั่งซื้อ แล้วส่งสลิป <b>STYLE PLAY ไม่รับ ไม่ถือ และไม่โอนต่อเงินของลูกค้า</b>',
  'ต้องชำระภายใน '+hrs+' ชั่วโมงหลังสั่งซื้อ หากไม่ชำระ คำสั่งซื้อจะถูกยกเลิกอัตโนมัติ คุณยกเลิกคำสั่งซื้อที่ยังไม่ได้ชำระได้เองทุกเมื่อ',
@@ -2301,13 +2301,14 @@ privacy:[
  '<b>เพื่อปฏิบัติตามกฎหมาย:</b> เช่น เก็บหลักฐานทางบัญชีหรือเมื่อหน่วยงานรัฐร้องขอตามกฎหมาย',
  'เราไม่ขายข้อมูลส่วนบุคคล และจะไม่ส่งโฆษณาทางการตลาดถึงคุณโดยไม่ขอความยินยอมก่อน']],
 ['4. ใครเห็นข้อมูลของคุณ',['<b>ร้านค้าที่คุณสั่งซื้อ:</b> เห็นชื่อผู้รับ เบอร์โทร ที่อยู่ หมายเหตุ และสลิปของคำสั่งซื้อนั้น เพื่อจัดส่งและตรวจการชำระเงิน ร้านต้องใช้ข้อมูลเพื่อการนี้เท่านั้น',
- '<b>ผู้ให้บริการระบบที่ทำงานแทนเรา:</b> Supabase (ฐานข้อมูล เก็บไฟล์ และระบบล็อกอิน), Google (ส่งอีเมลผ่าน Gmail), GitHub Pages (เผยแพร่หน้าเว็บ) และ jsDelivr (โหลดเครื่องมือสร้าง QR พร้อมเพย์) ผู้ให้บริการเหล่านี้อาจเก็บข้อมูลบนเซิร์ฟเวอร์นอกประเทศไทย ซึ่งเราเลือกใช้ผู้ให้บริการที่มีมาตรการคุ้มครองข้อมูลตามมาตรฐานสากล',
+ '<b>ผู้ให้บริการระบบที่ทำงานแทนเรา:</b> Supabase (ฐานข้อมูล เก็บไฟล์ และระบบล็อกอิน), Google (ส่งอีเมลผ่าน Gmail), GitHub (เผยแพร่หน้าเว็บ และเก็บสำเนาสำรองของฐานข้อมูลที่เข้ารหัสแล้ว) และ jsDelivr (โหลดเครื่องมือสร้าง QR พร้อมเพย์) ผู้ให้บริการเหล่านี้อาจเก็บข้อมูลบนเซิร์ฟเวอร์นอกประเทศไทย ซึ่งเราเลือกใช้ผู้ให้บริการที่มีมาตรการคุ้มครองข้อมูลตามมาตรฐานสากล',
  '<b>หน่วยงานรัฐ:</b> เมื่อกฎหมายกำหนด']],
-['5. เก็บไว้นานแค่ไหน',['ข้อมูลบัญชี: เก็บจนกว่าคุณจะขอปิดบัญชี',
- 'ข้อมูลคำสั่งซื้อ สลิป และเรื่องที่แจ้ง: เก็บเท่าที่จำเป็นเพื่อให้บริการ แก้ข้อพิพาท และเป็นหลักฐานทางบัญชี โดยไม่เกิน 5 ปีนับจากคำสั่งซื้อเสร็จสิ้น แล้วจะลบหรือทำให้ระบุตัวตนไม่ได้',
- 'บันทึกการยอมรับนโยบาย: เก็บตลอดระยะเวลาที่มีบัญชี และอีกไม่เกิน 5 ปีหลังปิดบัญชี']],
+['5. เก็บไว้นานแค่ไหน',['ข้อมูลบัญชี โปรไฟล์ รายการโปรด ชุดที่บันทึก และบันทึกการยอมรับนโยบาย: เก็บจนกว่าคุณจะลบบัญชี แล้วลบทันที',
+ 'ข้อมูลคำสั่งซื้อ สลิป และเรื่องที่แจ้ง: เก็บเท่าที่จำเป็นเพื่อให้บริการ แก้ข้อพิพาท และเป็นหลักฐานทางบัญชี โดยไม่เกิน 5 ปีนับจากคำสั่งซื้อเสร็จสิ้น แล้วจะลบหรือทำให้ระบุตัวตนไม่ได้ เมื่อคุณลบบัญชี ข้อมูลเหล่านี้จะไม่เชื่อมกับบัญชีใดอีก',
+ 'สำเนาสำรองของฐานข้อมูล: เข้ารหัสและเก็บแบบส่วนตัวไม่เกิน 30 วัน แล้วลบอัตโนมัติ']],
 ['6. สิทธิ์ของคุณ',['คุณมีสิทธิ์ขอเข้าถึงและขอสำเนาข้อมูล ขอให้แก้ไขให้ถูกต้อง ขอให้ลบหรือทำให้ระบุตัวตนไม่ได้ ขอให้ระงับการใช้ คัดค้านการใช้ ขอรับหรือขอให้โอนข้อมูล และถอนความยินยอม (ในกรณีที่ใช้ความยินยอม)',
- 'ส่งคำขอได้ทาง '+lgContact()+' เราอาจขอยืนยันตัวตนก่อน และจะตอบภายใน 30 วัน บางกรณีเราอาจปฏิเสธได้ตามที่กฎหมายอนุญาต เช่น ต้องเก็บข้อมูลคำสั่งซื้อไว้เป็นหลักฐาน',
+ '<b>ทำเองได้ทันทีที่หน้าโปรไฟล์:</b> ดาวน์โหลดข้อมูลของคุณ และลบบัญชี',
+ 'คำขออื่นส่งได้ทาง '+lgContact()+' เราอาจขอยืนยันตัวตนก่อน และจะตอบภายใน 30 วัน บางกรณีเราอาจปฏิเสธได้ตามที่กฎหมายอนุญาต เช่น ต้องเก็บข้อมูลคำสั่งซื้อไว้เป็นหลักฐาน',
  'หากเห็นว่าเราไม่ปฏิบัติตามกฎหมาย คุณร้องเรียนต่อสำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคล (สคส.) ได้']],
 ['7. ความปลอดภัย',['ข้อมูลส่งผ่านการเชื่อมต่อแบบเข้ารหัส (HTTPS) ฐานข้อมูลจำกัดสิทธิ์ให้แต่ละคนเห็นเฉพาะข้อมูลของตัวเอง และสลิปเก็บในพื้นที่ส่วนตัวที่เปิดดูได้เฉพาะคุณ ร้านในคำสั่งซื้อนั้น และผู้ดูแล',
  'หากเกิดเหตุละเมิดข้อมูลที่มีความเสี่ยงต่อคุณ เราจะแจ้ง สคส. และแจ้งคุณตามที่กฎหมายกำหนด']],
@@ -2383,6 +2384,49 @@ lgRecord(['shop'],'partner',SV.sid).then(function(){LGS.shopBusy=false;LGS.shop=
 (function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Your shop is the seller: you are responsible for your products, prices, shipping, refunds and taxes.':'ร้านเป็นผู้ขาย: รับผิดชอบสินค้า ราคา การจัดส่ง การคืนเงิน และภาษีของร้าน','Customers pay your shop directly by PromptPay. Confirm a payment only after the money is in your account.':'ลูกค้าโอนเงินให้ร้านโดยตรงผ่านพร้อมเพย์ กดยืนยันเฉพาะเมื่อเงินเข้าบัญชีจริงแล้ว',
 'Ship with a real tracking number within the ship-by time set by STYLE PLAY (3 days by default).':'จัดส่งพร้อมเลขพัสดุจริงภายในเวลาที่ STYLE PLAY กำหนด (ปกติ 3 วัน)','You pay STYLE PLAY a commission on completed orders (10% of item prices by default), billed by invoice. Overdue invoices pause your shop until paid.':'ร้านจ่ายค่าคอมมิชชันให้ STYLE PLAY จากคำสั่งซื้อที่สำเร็จ (ปกติ 10% ของค่าสินค้า) ตามใบแจ้งหนี้ หากค้างเกินกำหนด ร้านจะถูกพักจนกว่าจะชำระ',
 'Use customers\' details only to deliver and support their orders.':'ใช้ข้อมูลลูกค้าเพื่อจัดส่งและดูแลคำสั่งซื้อนั้นเท่านั้น','Product names, prices, images and stock must be accurate. Infringing or illegal items may be removed.':'ชื่อ ราคา รูป และสต็อกสินค้าต้องถูกต้อง สินค้าที่ละเมิดสิทธิ์หรือผิดกฎหมายอาจถูกนำออก','Read the full Shop Agreement':'อ่านข้อตกลงสำหรับร้านค้าฉบับเต็ม'});
+// ==================== ACCOUNT: download my data + delete my account (PDPA) ====================
+// Profile → "Your data and account". Download: a JSON file of everything this person can read about themself.
+// Delete: Edge Function "account" (check first, then type DELETE to confirm). Shops/admins/open orders are refused with a reason.
+var AC={};
+function acPanel(){if(!AU.user||!AU.sb||window.claude)return '';var th=LG()=='th',c=AC.chk,h='<p class="lb" style="margin-top:22px">'+tx('Your data and account')+'</p>';
+h+='<div class="cd" style="padding:14px 16px;margin-top:8px"><b>'+tx('Download my data')+'</b><p class="mu" style="margin:4px 0 10px">'+tx('A file with your profile, favorites, saved outfits, orders and the policies you accepted.')+'</p><button class="btn g s" type="button" data-a="ac_export"'+(AC.exp?' disabled':'')+'>'+tx(AC.exp?'Preparing…':'Download (.json)')+'</button></div>';
+h+='<div class="cd" style="padding:14px 16px;margin-top:10px"><b>'+tx('Delete my account')+'</b>';
+if(!c)h+='<p class="mu" style="margin:4px 0 10px">'+tx('Removes your sign-in, profile, favorites and saved outfits for good.')+'</p><button class="btn g s" type="button" data-a="ac_check"'+(AC.busy?' disabled':'')+'>'+tx(AC.busy?'Checking…':'Delete my account…')+'</button>';
+else if(c.err)h+='<p style="margin:6px 0 10px;color:#b4235a">'+esc(tx(c.err))+'</p><button class="btn g s" type="button" data-a="ac_close">'+tx('OK')+'</button>';
+else{h+='<p style="margin:6px 0 0">'+tx('What will happen:')+'</p><ul style="margin:6px 0 0;padding-left:20px;line-height:1.6"><li>'+tx('Your sign-in, profile, favorites and saved outfits are deleted. This cannot be undone.')+'</li>'
++(c.unpaid?'<li>'+esc(tx('Unpaid orders are cancelled: '+c.unpaid))+'</li>':'')
++(c.orders?'<li>'+tx('Past orders stay with the shops for their records (up to 5 years), no longer linked to you.')+'</li>':'')
++'<li>'+tx('You get a confirmation e-mail.')+'</li></ul><label class="fl" style="margin-top:12px"><span>'+tx('Type DELETE to confirm')+'</span><input class="in" id="ac-confirm" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10" value="'+esc(AC.typed||'')+'"></label>'
++'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px"><button class="btn s" type="button" data-a="ac_delete" style="background:#b4235a;border-color:#b4235a"'+(AC.busy?' disabled':'')+'>'+tx(AC.busy?'Deleting…':'Delete my account')+'</button><button class="btn g s" type="button" data-a="ac_close">'+tx('Cancel')+'</button></div>'}
+return h+'</div>'}
+async function acExport(){var u=AU.user,sb=AU.sb,out={exported_at:new Date().toISOString(),note:'STYLE PLAY — your personal data',account:{id:u.id,email:u.email,created_at:u.created_at,email_confirmed_at:u.email_confirmed_at||null,profile_settings:u.user_metadata||{}}};
+async function get(k,qb){try{out[k]=await svQ(qb)}catch(e){out[k]={error:String(e&&e.message||e)}}}
+await get('profile',sb.from('profiles').select('*').eq('id',u.id));
+await get('favorites',sb.from('user_favorites').select('*').eq('user_id',u.id));
+await get('saved_outfits',sb.from('saved_outfits').select('*').eq('user_id',u.id));
+await get('checkouts',sb.from('checkouts').select('*').eq('customer_id',u.id));
+await get('orders',sb.from('orders').select('*').eq('customer_id',u.id).limit(1000));
+var ids=Array.isArray(out.orders)?out.orders.map(function(o){return o.id}):[];
+if(ids.length){await get('order_items',sb.from('order_items').select('*').in('order_id',ids));await get('order_history',sb.from('order_events').select('*').in('order_id',ids).order('at'))}
+await get('accepted_policies',sb.from('legal_acceptances').select('doc,version,context,accepted_at,store_id').eq('user_id',u.id));
+await get('shop_applications',sb.from('seller_applications').select('*').eq('applicant_id',u.id));
+await get('shops',sb.from('store_members').select('store_id,role,created_at').eq('user_id',u.id));
+var blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='styleplay-my-data-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},4000);return out}
+var AC_ERR={has_shop:'You run a shop on STYLE PLAY. Close the shop first: contact STYLE PLAY, then delete your account.',is_admin:'Admin accounts cannot be deleted here. Remove the admin role first.',open_orders:'You have an order in progress (paid but not finished). Wait until it is completed or refunded, then try again.',confirm_required:'Type DELETE to confirm.'};
+Object.keys(AC_ERR).forEach(function(k){if(window.SV_FN&&!SV_FN[k])SV_FN[k]=AC_ERR[k]});
+function acMsg(e){var c=e&&(e.code||e.fn||e.error);return AC_ERR[c]||(window.shMsg?shMsg(e):'Something went wrong. Please try again.')}
+document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-a^="ac_"]'):null;if(!b||b.disabled)return;e.preventDefault();e.stopPropagation();var a=b.getAttribute('data-a');
+if(a=='ac_close'){AC.chk=null;AC.typed='';render();return}
+if(a=='ac_export'){AC.exp=true;render();acExport().then(function(){AC.exp=false;toast('Your data file is ready');render()},function(){AC.exp=false;toast('Could not prepare the file. Please try again.');render()});return}
+if(a=='ac_check'){AC.busy=true;render();svFn('account',{action:'check'}).then(function(d){AC.busy=false;AC.chk=d.check||{};render();var i=document.getElementById('ac-confirm');if(i)i.focus()},function(x){AC.busy=false;AC.chk={err:acMsg(x)};render()});return}
+if(a=='ac_delete'){var i=document.getElementById('ac-confirm'),v=i?i.value.trim().toUpperCase():'';AC.typed=i?i.value:'';if(v!=='DELETE'){toast('Type DELETE to confirm.');if(i)i.focus();return}
+AC.busy=true;render();svFn('account',{action:'delete',confirm:'DELETE'}).then(function(){AC={};try{localStorage.removeItem('sp_cart');localStorage.removeItem('sp_addr')}catch(x){}
+if(window.SH){SH.cart=[];SH.addr=null}var done=function(){toast('Your account has been deleted');location.hash='#/';render()};AU.sb.auth.signOut().then(done,done)},function(x){AC.busy=false;AC.chk={err:acMsg(x)};render()})}},true);
+(function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Your data and account':'ข้อมูลและบัญชีของฉัน','Download my data':'ดาวน์โหลดข้อมูลของฉัน','A file with your profile, favorites, saved outfits, orders and the policies you accepted.':'ไฟล์ที่มีโปรไฟล์ รายการโปรด ชุดที่บันทึก คำสั่งซื้อ และนโยบายที่คุณยอมรับ','Preparing…':'กำลังเตรียมไฟล์…','Download (.json)':'ดาวน์โหลด (.json)',
+'Delete my account':'ลบบัญชีของฉัน','Removes your sign-in, profile, favorites and saved outfits for good.':'ลบบัญชี โปรไฟล์ รายการโปรด และชุดที่บันทึกอย่างถาวร','Checking…':'กำลังตรวจสอบ…','Delete my account…':'ลบบัญชีของฉัน…','What will happen:':'สิ่งที่จะเกิดขึ้น:','Your sign-in, profile, favorites and saved outfits are deleted. This cannot be undone.':'บัญชี โปรไฟล์ รายการโปรด และชุดที่บันทึกจะถูกลบ ย้อนกลับไม่ได้',
+'Past orders stay with the shops for their records (up to 5 years), no longer linked to you.':'คำสั่งซื้อเดิมยังอยู่กับร้านเพื่อเป็นหลักฐาน (ไม่เกิน 5 ปี) แต่ไม่เชื่อมกับบัญชีคุณแล้ว','You get a confirmation e-mail.':'คุณจะได้รับอีเมลยืนยัน','Type DELETE to confirm':'พิมพ์ DELETE เพื่อยืนยัน','Deleting…':'กำลังลบ…','Your data file is ready':'ไฟล์ข้อมูลของคุณพร้อมแล้ว','Could not prepare the file. Please try again.':'เตรียมไฟล์ไม่สำเร็จ กรุณาลองใหม่','Type DELETE to confirm.':'พิมพ์ DELETE เพื่อยืนยัน','Your account has been deleted':'ลบบัญชีของคุณแล้ว',
+'You run a shop on STYLE PLAY. Close the shop first: contact STYLE PLAY, then delete your account.':'คุณเป็นเจ้าของหรือทีมงานร้านบน STYLE PLAY กรุณาติดต่อ STYLE PLAY เพื่อปิดร้านก่อน แล้วจึงลบบัญชี','Admin accounts cannot be deleted here. Remove the admin role first.':'ลบบัญชีแอดมินจากหน้านี้ไม่ได้ ต้องถอดสิทธิ์แอดมินก่อน','You have an order in progress (paid but not finished). Wait until it is completed or refunded, then try again.':'คุณมีคำสั่งซื้อที่จ่ายแล้วแต่ยังไม่เสร็จ รอให้สำเร็จหรือคืนเงินก่อน แล้วลองใหม่'});
+TR.push([/^Unpaid orders are cancelled: (\d+)$/,'คำสั่งซื้อที่ยังไม่จ่ายจะถูกยกเลิก: $1 รายการ']);
 render();requestAnimationFrame(tick);auInit();
 (async function(){try{if(!window.claude){ADM=false;return}DB=await claude.use('db');AI=await claude.use('sample');UP=await claude.use('assets');DLC=await claude.use('downloads');
 if(DB)['products','styles','settings','outfits','partners','categories'].forEach(function(c){DB.collection(c).onSnapshot(function(sn){CAT[c]=sn.docs.map(function(d){var o=Object.assign({},d.data()||{});o.id=d.id;return o});applyCat()},function(){})})}catch(e){ADM=false}finally{render()}})();
