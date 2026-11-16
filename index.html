@@ -1465,10 +1465,10 @@ function svPage(){var g=svGate('Partner Center');if(g)return g;
 if(!SV.loaded){if(!SV.loading&&!SV.err)setTimeout(svLoad,0);return svFrame('Partner Center','',SV.err?'<p class="bdg2" style="display:block;white-space:normal">'+esc(SV.err)+'</p>'+svBtn('g','sv_reload',null,'Try again'):'<p style="margin-top:12px">Loading your store…</p>')}
 var p=decodeURIComponent(location.hash.slice(1)).split('/');if(p[2]=='invite'&&p[3]&&!SV.code)SV.code=p[3].slice(0,200);
 if(!SV.stores.length)return svFrame('Partner Center','Sell your fashion products on STYLE PLAY.',svApply());
-var s=svStore(),own=svRole()=='owner',tabs=[['prod','My Products'],['edit',SV.ed&&SV.ed.id?'Edit Product':'Add Product'],['orders','Orders'],['stock','Stock'],['reviews','Reviews']].concat(own?[['store','Store Profile']]:[]);
+var s=svStore(),own=svRole()=='owner',tabs=[['board','Dashboard'],['prod','My Products'],['edit',SV.ed&&SV.ed.id?'Edit Product':'Add Product'],['orders','Orders'],['stock','Stock'],['reviews','Reviews']].concat(own?[['store','Store Profile']]:[]);
 var pick=SV.stores.length>1?'<label class="fl" style="max-width:360px"><span class="mu">Store</span><select class="in" data-a2="sv_pick">'+SV.stores.map(function(x){return '<option value="'+esc(x.id)+'"'+(x.id==SV.sid?' selected':'')+'>'+esc(x.name)+'</option>'}).join('')+'</select></label>':'';
 var head='<div class="it" style="padding:12px 16px"><div class="i"><b>'+esc(s.name)+'</b> '+svPill(s.status)+'<br><span class="mu">'+(own?'Owner':'Editor')+(s.is_demo?' · Demo store':'')+'</span></div></div>'+(s.status!='active'&&!(SH.so&&SH.so.sid==s.id&&SH.so.store&&SH.so.store.billing_hold)?'<p class="bdg2" style="display:block;white-space:normal;margin:8px 0">This store is paused by STYLE PLAY. Its products are not shown on the site and you cannot add new ones right now.</p>':'');
-var body=SV.tab=='edit'?svForm():SV.tab=='orders'?shSeller():SV.tab=='stock'?shStockTab():SV.tab=='reviews'?rvSellerTab():SV.tab=='store'&&own?svStoreForm():svList();
+var body=SV.tab=='edit'?svForm():SV.tab=='board'?dbSellerTab():SV.tab=='orders'?shSeller():SV.tab=='stock'?shStockTab():SV.tab=='reviews'?rvSellerTab():SV.tab=='store'&&own?svStoreForm():svList();
 return svFrame('Partner Center','Your products stay hidden until the STYLE PLAY team approves them.',pick+head+(own&&window.lgShopBanner?lgShopBanner():'')+'<div class="ch" style="margin-top:12px">'+tabs.map(function(t){return '<button type="button" class="'+(SV.tab==t[0]?'on':'')+'" data-a="sv_tab" data-id="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div>'+body)}
 // ---------- application ----------
 function svApplyState(){var a=SV.app;if(!SV.ap){var b=a&&(a.status=='draft'||a.status=='changes_requested'||(a.status=='submitted'&&SV.apEdit))?a:{};SV.ap={store_name:b.store_name||'',legal_name:b.legal_name||'',tax_id:b.tax_id||'',website:b.website||'',contact_email:b.contact_email||(AU.user&&AU.user.email)||'',phone:b.phone||'',social:b.social||'',description:b.description||'',image_rights:!!b.image_rights,terms_accepted:!!b.terms_accepted}}return SV.ap}
@@ -1650,7 +1650,8 @@ function saSlug(s){var x=String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').
 function saLookStatus(s){return s=='published'?'Live':s=='hidden'?'Hidden':'Draft'}
 async function saFnApprove(pid){await svFn('review-product',{product_id:pid,decision:'approve',note:null})}
 // ---------- 1 overview ----------
-function saDash(){var live=SA.prods.filter(function(p){return p.status=='published'}),real=live.filter(function(p){var s=saStore(p.store_id);return s&&!s.is_demo});
+function saDash(){if(window.dbBoard&&!SH.ad)setTimeout(shAdLoad,0);var brd=window.dbBoard&&SH.ad&&SH.ad.os?dbBoard(SH.ad.os,'admin'):'';return brd+saDash0()}
+function saDash0(){var live=SA.prods.filter(function(p){return p.status=='published'}),real=live.filter(function(p){var s=saStore(p.store_id);return s&&!s.is_demo});
 var day7=new Date(Date.now()+7*3600e3-6*86400e3).toISOString().slice(0,10),c7=SA.clicks.filter(function(c){return c.day>=day7}),sum=0,by={};c7.forEach(function(c){sum+=c.clicks;by[c.product_id]=(by[c.product_id]||0)+c.clicks});
 var top=Object.keys(by).sort(function(a,b){return by[b]-by[a]}).slice(0,5);
 var tiles=[[SA.stores.filter(function(s){return s.status=='active'&&!s.is_demo}).length,'Active stores','stores'],[real.length,'Live products from stores','prods'],[SA.prods.filter(function(p){return p.status=='pending_review'}).length,'Products waiting for review','review'],
@@ -2086,7 +2087,7 @@ h+='<div class="cd" style="padding:14px 16px;margin-top:12px"><h3 style="margin:
 h+=shCtCard(s,own);
 h+='<div class="cd" style="padding:14px 16px;margin-top:12px"><h3 style="margin:0 0 6px">Commission to STYLE PLAY</h3><p style="margin:0">You owe <b>'+m$(owed)+'</b></p><p class="mu" style="margin:2px 0 0">'+tx('Commission is charged on completed orders and billed monthly. STYLE PLAY sends payment details with each invoice.')+'</p>'
 +so.inv.map(function(i){return '<div class="it" style="padding:6px 0"><div class="i" style="flex:1">'+esc(i.code)+' · '+i.order_count+' '+tx('orders')+'<br><span class="mu">'+(i.status=='open'?tx('Due')+' '+esc(i.due_date)+(i.pay_to?'<br>'+tx('Pay to:')+' '+esc(i.pay_to):''):tx('Paid')+' '+shDate(i.paid_at))+'</span></div><b>'+m$(i.amount)+'</b></div>'}).join('')+'</div>';
-h+=shSummary(so.os,'shop')+'<button class="btn g s" data-a="sh_csv" data-id="shop" style="margin-top:10px">Download order history (CSV)</button>';
+h+=(window.dbBoard?dbBoard(so.os,'shop'):shSummary(so.os,'shop'))+'<button class="btn g s" data-a="sh_csv" data-id="shop" style="margin-top:10px">Download order history (CSV)</button>';
 var tabs=[['todo','To do'],['ship','Shipped'],['done','Done'],['all','All']],f={todo:['pending_payment','payment_review','to_ship','problem'],ship:['shipped'],done:['completed','refunded'],all:null}[SH.soTab]||null;
 var list=so.os.filter(function(o){return !f||f.indexOf(o.status)>-1}),n=so.os.filter(function(o){return ['payment_review','to_ship'].indexOf(o.status)>-1}).length;
 h+='<h3 style="margin:20px 0 8px">Orders'+(n?' · '+n+' '+tx('need you'):'')+'</h3><div class="ch">'+tabs.map(function(t){return '<button type="button" class="'+(SH.soTab==t[0]?'on':'')+'" data-a="sh_sotab" data-id="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div>';
@@ -2134,7 +2135,7 @@ h+='<div class="cd" style="padding:14px 16px;margin-top:12px"><h3 style="margin:
 +(SH.adSet?'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px">'+[['commission_pct','Commission %',st.commission_pct!=null?st.commission_pct:10],['pay_window_hours','Hours to pay',st.pay_window_hours!=null?st.pay_window_hours:24],['auto_complete_days','Auto-complete after (days)',st.auto_complete_days!=null?st.auto_complete_days:7],['commission_due_days','Invoice due in (days)',st.commission_due_days!=null?st.commission_due_days:15],['commission_credit_limit','Pause shop when owed ≥ (฿, 0 = off)',st.commission_credit_limit!=null?st.commission_credit_limit:1000],['ship_days','Days to ship after payment',st.ship_days!=null?st.ship_days:3]].map(function(f){return '<label class="fl" style="margin:0"><span class="mu">'+f[1]+'</span><input class="in" type="number" min="0" step="1" id="sh-set-'+f[0]+'" value="'+esc(f[2])+'"></label>'}).join('')+'</div>'
 +'<label class="fl"><span class="mu">Where shops pay commission (shown on their invoices only)</span><input class="in" id="sh-payto" maxlength="300" value="'+esc(d.bill.pay_to||'')+'" placeholder="'+esc(tx('e.g. PromptPay 08x-xxx-xxxx (your name)'))+'"></label><div style="display:flex;gap:10px"><button class="btn" data-a="sh_adsave">Save</button><button class="btn g" data-a="sh_adset">Cancel</button></div>'
 :'<p class="mu" style="margin:10px 0 0">'+tx('Commission')+' '+esc(st.commission_pct!=null?st.commission_pct:10)+'% · '+tx('pay within')+' '+esc(st.pay_window_hours!=null?st.pay_window_hours:24)+' h · '+tx('invoice due')+' '+esc(st.commission_due_days!=null?st.commission_due_days:15)+' '+tx('days')+' · '+tx('limit')+' '+m$(st.commission_credit_limit!=null?st.commission_credit_limit:1000)+' · '+tx('ship within')+' '+esc(st.ship_days!=null?st.ship_days:3)+' '+tx('days')+'<br>'+(d.bill.pay_to?tx('Shops pay to:')+' '+esc(d.bill.pay_to):'<span style="color:#b4235a">'+tx('Add where shops should pay their commission.')+'</span>')+'</p><button class="btn g s" data-a="sh_adset" style="margin-top:8px">Edit settings</button>')+'</div>';
-h+=(window.lgAdminCard?lgAdminCard():'')+(window.rvAdminCard?rvAdminCard():'')+shSummary(d.os,'admin');
+h+=(window.lgAdminCard?lgAdminCard():'')+(window.rvAdminCard?rvAdminCard():'')+(window.dbBoard?dbBoard(d.os,'admin'):shSummary(d.os,'admin'));
 // per shop money
 var by={};d.os.forEach(function(o){(by[o.store_id]=by[o.store_id]||[]).push(o)});d.inv.forEach(function(i){by[i.store_id]=by[i.store_id]||[]});
 h+='<div class="cd" style="padding:14px 16px;margin-top:12px"><h3 style="margin:0 0 6px">Commission by shop</h3>'+(Object.keys(by).length?Object.keys(by).map(function(sid){var a=shAgg(by[sid]),open=d.inv.filter(function(i){return i.store_id==sid&&i.status=='open'});
@@ -2536,6 +2537,55 @@ if(a=='rv_mod'){var hide=k=='hide';if(hide&&SH.confirm!='rvmod.'+id){SH.confirm=
 'Latest reviews':'รีวิวล่าสุด','No reviews yet.':'ยังไม่มีรีวิว','Show again':'แสดงอีกครั้ง','Tap again to hide':'แตะอีกครั้งเพื่อซ่อน','Hide':'ซ่อน','Tap the stars to choose a rating.':'แตะดาวเพื่อให้คะแนน','Thanks for your review!':'ขอบคุณสำหรับรีวิว!','Review deleted':'ลบรีวิวแล้ว','Reply posted':'ส่งคำตอบแล้ว','Review hidden':'ซ่อนรีวิวแล้ว','Review shown':'แสดงรีวิวแล้ว',
 'You can review once the order is completed.':'รีวิวได้เมื่อคำสั่งซื้อสำเร็จแล้ว','Reviews can be edited for 30 days. You can still delete it.':'แก้รีวิวได้ภายใน 30 วัน แต่ยังลบได้','Please keep it under 1000 characters.':'กรุณาเขียนไม่เกิน 1000 ตัวอักษร','Only admins can do this.':'เฉพาะแอดมินเท่านั้น'});
 TR.push([/^(\d+) reviews?$/,'$1 รีวิว']);
+// ==================== BOARD: sales dashboard by period (Admin → Orders, Partner Center → Dashboard / Orders) ====================
+// Periods: today, yesterday, 7 days, 30 days, this month, 3 months, all time — each compared with the period just before.
+// Money is counted on the day it was PAID (Bangkok time); refunded / cancelled orders are left out of sales.
+// Works on the orders already loaded for the page (shop: its own orders; admin: the latest 500).
+var DB_P=[['today','Today'],['yday','Yesterday'],['7d','7 days'],['30d','30 days'],['month','This month'],['90d','3 months'],['all','All time']];
+var DB_H=7*3600e3,DB_D=864e5;
+function dbDay(t){return Math.floor((new Date(t).getTime()+DB_H)/DB_D)}           // Bangkok day number
+function dbStart(day){return day*DB_D-DB_H}                                       // ms at 00:00 Bangkok
+function dbWin(p){var today=dbDay(Date.now()),d=new Date(Date.now()+DB_H),y=d.getUTCFullYear(),m=d.getUTCMonth();
+if(p=='today')return {a:today,b:today,pa:today-1,pb:today-1};
+if(p=='yday')return {a:today-1,b:today-1,pa:today-2,pb:today-2};
+if(p=='7d')return {a:today-6,b:today,pa:today-13,pb:today-7};
+if(p=='30d')return {a:today-29,b:today,pa:today-59,pb:today-30};
+if(p=='90d')return {a:today-89,b:today,pa:today-179,pb:today-90};
+if(p=='month'){var a=Math.floor(Date.UTC(y,m,1)/DB_D),pa=Math.floor(Date.UTC(y,m-1,1)/DB_D),len=today-a;return {a:a,b:today,pa:pa,pb:Math.min(pa+len,a-1)}}
+return {a:-1e9,b:today,all:true}}
+function dbPaid(o){return o.paid_at&&['refunded','cancelled','pending_payment','payment_review'].indexOf(o.status)<0}
+function dbIn(o,a,b){var d=dbDay(o.paid_at);return d>=a&&d<=b}
+function dbAgg(os,a,b){var r={n:0,sales:0,ship:0,com:0,qty:0,refunds:0,placed:0};os.forEach(function(o){var cd=dbDay(o.created_at);if(cd>=a&&cd<=b)r.placed++;
+if(o.status=='refunded'&&o.paid_at&&dbIn(o,a,b)){r.refunds++;return}if(!dbPaid(o)||!dbIn(o,a,b))return;r.n++;r.sales+=+o.items_total||0;r.ship+=+o.shipping_fee||0;r.com+=+o.commission_amount||0;(o.items||[]).forEach(function(i){r.qty+=+i.qty||0})});r.avg=r.n?(r.sales+r.ship)/r.n:0;r.keep=r.sales+r.ship-r.com;return r}
+function dbDelta(cur,prev){if(prev==null)return '';if(!prev&&!cur)return '<span class="mu" style="font-size:12px">—</span>';if(!prev)return '<span style="font-size:12px;color:#1a7f37">▲ '+tx('new')+'</span>';var p=Math.round((cur-prev)/prev*100);
+return '<span style="font-size:12px;color:'+(p>0?'#1a7f37':p<0?'#b4235a':'var(--mu)')+'">'+(p>0?'▲ ':p<0?'▼ ':'')+Math.abs(p)+'%</span>'}
+function dbTile(l,v,cur,prev,money){return '<div style="flex:1 1 140px;min-width:130px;padding:10px 12px;border:1px solid var(--ln);border-radius:14px"><span class="mu" style="font-size:13px">'+tx(l)+'</span><br><b style="font-size:1.35em">'+(money?m$(v):esc(String(v)))+'</b><br>'+dbDelta(cur,prev)+'</div>'}
+// bars: one per day (≤31 days), per week (≤ ~6 months), else per month
+function dbBars(os,w){var a=w.all?(os.reduce(function(m,o){return o.paid_at?Math.min(m,dbDay(o.paid_at)):m},w.b)):w.a,b=w.b,span=b-a+1,step=span<=31?1:span<=190?7:30,bk=[];
+for(var s=a;s<=b;s+=step)bk.push({a:s,b:Math.min(s+step-1,b),v:0});os.forEach(function(o){if(!dbPaid(o))return;var d=dbDay(o.paid_at);if(d<a||d>b)return;var k=Math.floor((d-a)/step);if(bk[k])bk[k].v+=(+o.items_total||0)});
+var mx=Math.max.apply(null,bk.map(function(x){return x.v}).concat([1])),W=100/bk.length,lab=function(day){var d=new Date(dbStart(day)+DB_H);return d.getUTCDate()+'/'+(d.getUTCMonth()+1)};
+return '<div style="margin-top:12px"><svg viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label="'+esc(tx('Sales by day'))+'" style="width:100%;height:90px;display:block">'+bk.map(function(x,i){var hgt=x.v?Math.max(1.5,x.v/mx*38):0.6;
+return '<rect x="'+(i*W+W*0.12).toFixed(3)+'" y="'+(40-hgt).toFixed(3)+'" width="'+(W*0.76).toFixed(3)+'" height="'+hgt.toFixed(3)+'" rx="0.6" fill="'+(x.v?'#0f1014':'var(--ln)')+'"><title>'+esc(lab(x.a)+(x.b>x.a?'–'+lab(x.b):'')+' · '+m$(x.v).replace(/<[^>]+>/g,''))+'</title></rect>'}).join('')+'</svg>'
++'<div class="mu" style="display:flex;justify-content:space-between;font-size:12px"><span>'+lab(a)+'</span><span>'+tx(step==1?'per day':step==7?'per week':'per month')+'</span><span>'+lab(b)+'</span></div></div>'}
+function dbTop(os,w,key){var m={};os.forEach(function(o){if(!dbPaid(o)||!dbIn(o,w.a,w.b))return;if(key=='shop'){var k=o.store_id;m[k]=m[k]||{n:(window.shStoreNm?shStoreNm(k):k),q:0,v:0};m[k].q++;m[k].v+=+o.items_total||0}
+else (o.items||[]).forEach(function(i){var k=i.product_id||i.name;m[k]=m[k]||{n:i.name,q:0,v:0};m[k].q+=+i.qty||0;m[k].v+=+i.line_total||0})});
+var L=Object.keys(m).map(function(k){return m[k]}).sort(function(x,y){return y.v-x.v}).slice(0,5);if(!L.length)return '';
+return '<div style="flex:1 1 260px;min-width:240px"><b style="font-size:14px">'+tx(key=='shop'?'Top shops':'Best sellers')+'</b>'+L.map(function(x,i){return '<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--ln);font-size:14px"><span>'+(i+1)+'. '+esc(x.n)+'</span><span class="mu">'+(key=='shop'?x.q+' '+tx('orders'):x.q+' '+tx('pcs'))+' · '+m$(x.v)+'</span></div>'}).join('')+'</div>'}
+function dbBoard(os,who){var p=SH.bp||'7d',w=dbWin(p),c=dbAgg(os,w.a,w.b),pv=w.all?null:dbAgg(os,w.pa,w.pb),P=function(k){return pv?pv[k]:null},shop=who=='shop';
+var h='<div class="cd" style="padding:14px 16px;margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">'+tx('Dashboard')+'</h3><span class="mu" style="font-size:12px">'+(w.all?'':tx('compared with the period before'))+'</span></div>'
++'<div class="ch" style="margin:10px 0 12px;flex-wrap:wrap">'+DB_P.map(function(x){return '<button type="button" class="'+(p==x[0]?'on':'')+'" data-a="sh_bp" data-id="'+x[0]+'" aria-pressed="'+(p==x[0])+'">'+tx(x[1])+'</button>'}).join('')+'</div>'
++'<div style="display:flex;gap:10px;flex-wrap:wrap">'+dbTile('Sales',c.sales,c.sales,P('sales'),1)+dbTile('Paid orders',c.n,c.n,P('n'))+dbTile('Items sold',c.qty,c.qty,P('qty'))+dbTile('Average order',c.avg,c.avg,P('avg'),1)
++dbTile(shop?'Commission to STYLE PLAY':'Commission earned',c.com,c.com,P('com'),1)+(shop?dbTile('You keep (incl. shipping)',c.keep,c.keep,P('keep'),1):dbTile('Shipping collected by shops',c.ship,c.ship,P('ship'),1))+'</div>'
++'<p class="mu" style="margin:8px 0 0;font-size:13px">'+esc(tx('New orders placed')+': '+c.placed+' · '+tx('Refunded')+': '+c.refunds)+'</p>'
++dbBars(os,w)+'<div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:12px">'+dbTop(os,w,'product')+(shop?'':dbTop(os,w,'shop'))+'</div>';
+if(!c.n&&!c.placed)h+='<p class="mu" style="margin:10px 0 0">'+tx('No sales in this period.')+'</p>';
+return h+'</div>'}
+document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-a="sh_bp"]'):null;if(!b)return;e.preventDefault();e.stopPropagation();SH.bp=b.getAttribute('data-id');render()},true);
+// Partner Center → Dashboard tab (uses the same order data as the Orders tab)
+function dbSellerTab(){if(!SH.so||SH.so.sid!=SV.sid){setTimeout(shSoLoad,0);return '<p style="margin-top:14px">'+tx('Loading…')+'</p>'}if(SH.so.loading)return '<p style="margin-top:14px">'+tx('Loading…')+'</p>';if(SH.so.err)return shErr(SH.so.err);return dbBoard(SH.so.os,'shop')}
+(function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Today':'วันนี้','Yesterday':'เมื่อวาน','7 days':'7 วัน','30 days':'30 วัน','This month':'เดือนนี้','3 months':'3 เดือน','All time':'ทั้งหมด','Dashboard':'ภาพรวม','compared with the period before':'เทียบกับช่วงก่อนหน้า',
+'Sales':'ยอดขาย','Paid orders':'คำสั่งซื้อที่จ่ายแล้ว','Items sold':'ชิ้นที่ขายได้','Average order':'เฉลี่ยต่อคำสั่งซื้อ','Commission to STYLE PLAY':'ค่าคอมฯ ให้ STYLE PLAY','Commission earned':'ค่าคอมฯ ที่ได้','You keep (incl. shipping)':'ร้านได้รับ (รวมค่าส่ง)','Shipping collected by shops':'ค่าส่งที่ร้านเก็บ',
+'New orders placed':'คำสั่งซื้อใหม่','Refunded':'คืนเงิน','Sales by day':'ยอดขายรายวัน','per day':'รายวัน','per week':'รายสัปดาห์','per month':'รายเดือน','Top shops':'ร้านขายดี','Best sellers':'สินค้าขายดี','orders':'คำสั่งซื้อ','pcs':'ชิ้น','new':'ใหม่','No sales in this period.':'ช่วงนี้ยังไม่มียอดขาย','Loading…':'กำลังโหลด…'});
 render();requestAnimationFrame(tick);auInit();
 (async function(){try{if(!window.claude){ADM=false;return}DB=await claude.use('db');AI=await claude.use('sample');UP=await claude.use('assets');DLC=await claude.use('downloads');
 if(DB)['products','styles','settings','outfits','partners','categories'].forEach(function(c){DB.collection(c).onSnapshot(function(sn){CAT[c]=sn.docs.map(function(d){var o=Object.assign({},d.data()||{});o.id=d.id;return o});applyCat()},function(){})})}catch(e){ADM=false}finally{render()}})();
