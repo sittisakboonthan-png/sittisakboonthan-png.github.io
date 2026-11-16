@@ -1930,9 +1930,9 @@ function shCanBuy(id){if(!shOn()||!shUuid(id))return false;var s=shStore(id);if(
 function shLoad(){try{var c=JSON.parse(localStorage.getItem('sp_cart')||'[]');SH.cart=Array.isArray(c)?c.filter(function(l){return l&&typeof l.id=='string'&&l.id.length<=80&&(l.size==null||typeof l.size=='string')&&l.qty>=1&&l.qty<=10}).slice(0,30):[]}catch(e){SH.cart=[]}}
 function shSave(){try{localStorage.setItem('sp_cart',JSON.stringify(SH.cart))}catch(e){}}
 function shCount(){return SH.cart.reduce(function(a,l){return a+l.qty},0)}
-function shNav(){return shOn()?[['#/cart','Cart ('+shCount()+')']].concat(AU.user?[['#/orders','My orders']]:[]):[]}
+function shNav(){return shOn()?[['#/cart','Cart ('+shCount()+')']].concat(AU.user?[['#/orders','My orders']]:[]).concat(SH.admin===true?[['#/admin','Admin']]:[]):[]}
 function shAuth(u){var id=u?u.id:null;if(SH.uid===id)return;SH.uid=id;SH.admin=null;SH.ol=null;SH.ck=null;SH.so=null;SH.slip={};
-if(id&&AU.sb)AU.sb.from('user_roles').select('role').eq('user_id',id).then(function(r){SH.admin=!!(r.data&&r.data.length);if(['product','cart','checkout'].indexOf(auRoute())>-1)render()},function(){SH.admin=false})}
+if(id&&AU.sb)AU.sb.from('user_roles').select('role').eq('user_id',id).then(function(r){SH.admin=!!(r.data&&r.data.some(function(x){return x.role=='admin'}));render()},function(){SH.admin=false})}
 function shMsg(e){return e&&e.fn?e.message:(e&&/Failed to fetch|NetworkError/i.test(String(e.message))?'No connection. Check your internet and try again.':'Something went wrong. Please try again.')}
 function shErr(t){return '<p class="bdg2" style="display:block;white-space:normal;margin:10px 0">'+esc(t)+'</p>'}
 function shGate(t){if(!shOn())return svFrame(t,'','<p style="margin-top:12px">'+(AU.mode=='loading'?'Connecting…':'Ordering is not available on this version.')+'</p>');return svGate(t)}
