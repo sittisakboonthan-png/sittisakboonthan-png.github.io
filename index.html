@@ -1668,7 +1668,7 @@ return '<div class="rw" style="margin:12px 0 0;justify-content:flex-start;flex-w
 +'<div class="ch" style="flex-wrap:wrap;margin-top:10px">'+S.map(function(s){var n=s[0]=='all'?SA.prods.length:SA.prods.filter(function(p){return p.status==s[0]}).length;return '<button type="button" class="'+(f.st==s[0]?'on':'')+'" data-a="sa_pf" data-id="'+s[0]+'">'+s[1]+' ('+n+')</button>'}).join('')+'</div>'
 +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px"><label class="fl" style="flex:1 1 220px"><span class="mu">Search by name</span><input class="in" type="search" data-sa="pf.q" value="'+esc(f.q||'')+'" enterkeyhint="search"></label>'
 +'<label class="fl" style="flex:1 1 220px"><span class="mu">Store</span><select class="in" data-sa="pf.store"><option value="">All stores</option>'+SA.stores.map(function(s){return '<option value="'+esc(s.id)+'"'+(f.store==s.id?' selected':'')+'>'+esc(s.name)+'</option>'}).join('')+'</select></label></div>'
-+'<p class="mu">'+L.length+' shown</p><div class="g sg" style="margin-top:8px">'+L.slice(0,120).map(function(p){var st=p.status,b=[svBtn('g s','sa_pedit',p.id,'Edit')];
++(window.saBulkBar?saBulkBar(L):'')+'<p class="mu">'+L.length+' shown</p><div class="g sg" style="margin-top:8px">'+L.slice(0,120).map(function(p){var st=p.status,b=[svBtn('g s','sa_pedit',p.id,'Edit')];
 if(st=='pending_review')b.push(svBtn('s','sa_prod',p.id+'|approve','Approve'));
 if(st=='published')b.push(svBtn('g s','sa_phide',p.id,'Hide'));
 if(['draft','hidden','rejected','changes_requested'].indexOf(st)>-1&&(p.product_url||(saStore(p.store_id)||{}).is_demo))b.push(svBtn('s','sa_ppub',p.id,'Publish'));
@@ -2796,6 +2796,33 @@ AU.sb.storage.from('payment-slips').createSignedUrl(b.getAttribute('data-p'),600
 'This picture is too large. Take a screenshot of the slip and try again.':'รูปใหญ่เกินไป ลองแคปหน้าจอสลิปแล้วส่งใหม่','The slip could not be opened.':'เปิดสลิปไม่ได้','Loading…':'กำลังโหลด…'});
 TR.push([/^(\d+) commission slips waiting for you to confirm\.$/,'มีสลิปค่าคอมฯ $1 รายการรอคุณยืนยัน'],[/^(\d+) items need a slip from you\.$/,'มี $1 รายการที่ต้องแนบสลิป']);
 (function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Shop sent a slip · see Money':'ร้านแนบสลิปแล้ว · ดูในแท็บการเงิน'});
+// ==================== BULK: hide / show every product in the current list (Admin → Products) ====================
+// Works on what the filters show (status, search, store). Tap once, then tap again to confirm. Progress is shown while it runs.
+var BK={run:null,ask:null,ids:[]};
+function saBulkBar(L){BK.ids=L.map(function(p){return p.id});var sig=BK.ids.join(',');if(BK.ask&&BK.sig!=sig)BK.ask=null;BK.sig=sig;
+var live=L.filter(function(p){return p.status=='published'}),hid=L.filter(function(p){return p.status=='hidden'}),real=live.filter(function(p){return !(saStore(p.store_id)||{}).is_demo}).length;
+if(BK.run)return '<div class="cd" style="padding:12px 14px;margin-top:10px" role="status"><b>'+esc(tx(BK.run.k=='hide'?'Hiding products…':'Showing products…'))+'</b> '+BK.run.done+' / '+BK.run.total+'<div style="height:6px;border-radius:6px;background:var(--ln);margin-top:8px;overflow:hidden"><div style="height:100%;width:'+Math.round(BK.run.done/Math.max(1,BK.run.total)*100)+'%;background:currentColor"></div></div></div>';
+if(!live.length&&!hid.length)return '';
+var h='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px">';
+if(live.length)h+='<button type="button" class="btn '+(BK.ask=='hide'?'d':'g')+' s" data-a="bk_go" data-id="hide">'+esc(BK.ask=='hide'?tx('Tap again to hide')+' '+live.length:tx('Hide all shown')+' ('+live.length+')')+'</button>';
+if(hid.length)h+='<button type="button" class="btn g s" data-a="bk_go" data-id="show">'+esc(BK.ask=='show'?tx('Tap again to show')+' '+hid.length:tx('Show all hidden')+' ('+hid.length+')')+'</button>';
+h+='</div>';
+if(BK.ask=='hide'&&real)h+='<p class="bdg2" style="display:block;white-space:normal;margin:8px 0 0">'+esc(tx(real==1?'This includes 1 product from a real shop.':'This includes '+real+' products from real shops.'))+' '+esc(tx('To hide only samples, pick the sample store above first.'))+'</p>';
+return h}
+async function saBulk(k){var ids=BK.ids.filter(function(id){var p=saP(id);return p&&(k=='hide'?p.status=='published':p.status=='hidden')}),skip=0,fail=0;if(!ids.length)return;
+if(k=='show')ids=ids.filter(function(id){var p=saP(id),ok=(SA.pst[id]||[]).length&&(p.product_url||(saStore(p.store_id)||{}).is_demo);if(!ok)skip++;return ok});
+BK.ask=null;BK.run={k:k,done:0,total:ids.length};render();var sb=AU.sb,q=ids.slice();
+async function one(id){try{if(k=='hide')await svFn('review-product',{product_id:id,decision:'hide',note:'Hidden by STYLE PLAY'});
+else{var p=saP(id);if(p.status!='pending_review')await svQ(sb.from('products').update({status:'pending_review'}).eq('id',id));await saFnApprove(id)}}catch(e){fail++}BK.run.done++;render()}
+async function worker(){while(q.length)await one(q.shift())}
+await Promise.all([worker(),worker(),worker(),worker()]);BK.run=null;SA.loaded=false;try{await saLoad()}catch(e){}if(window.sbCat)try{sbCat()}catch(e){}
+toast(tx(k=='hide'?'Hidden':'Shown')+': '+(ids.length-fail)+(fail?' · '+tx('failed')+': '+fail:'')+(skip?' · '+tx('skipped (no style or link)')+': '+skip:''));render()}
+document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-a="bk_go"]'):null;if(!b||BK.run)return;e.preventDefault();e.stopPropagation();var k=b.getAttribute('data-id');
+if(BK.ask!=k){BK.ask=k;render();setTimeout(function(){if(BK.ask==k){BK.ask=null;render()}},6000);return}saBulk(k)},true);
+(function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Hide all shown':'ซ่อนทั้งหมดที่แสดงอยู่','Show all hidden':'แสดงทั้งหมดที่ซ่อนอยู่','Tap again to hide':'แตะอีกครั้งเพื่อซ่อน','Tap again to show':'แตะอีกครั้งเพื่อแสดง',
+'Hiding products…':'กำลังซ่อนสินค้า…','Showing products…':'กำลังแสดงสินค้า…','This includes 1 product from a real shop.':'รายการนี้มีสินค้าจากร้านจริง 1 ชิ้นด้วย','To hide only samples, pick the sample store above first.':'ถ้าจะซ่อนเฉพาะสินค้าตัวอย่าง ให้เลือกร้านตัวอย่างในช่อง "ร้านค้า" ด้านบนก่อน',
+'Hidden':'ซ่อนแล้ว','Shown':'แสดงแล้ว','failed':'ไม่สำเร็จ','skipped (no style or link)':'ข้าม (ไม่มีสไตล์หรือลิงก์)'});
+TR.push([/^This includes (\d+) products from real shops\.$/,'รายการนี้มีสินค้าจากร้านจริง $1 ชิ้นด้วย']);
 </script>
 </body>
 </html>
