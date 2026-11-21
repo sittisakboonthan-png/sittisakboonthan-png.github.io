@@ -350,7 +350,7 @@ function chips(list,cur,act){return '<div class="ch">'+list.map(function(x){retu
 // ---------- pages ----------
 function rcard(o){return '<div class="rc"><div style="position:relative">'+co(o.it)+(o.cover?'<img class="cvimg" src="'+esc(sbImg(o.cover))+'" alt="'+esc(o.n)+'" draggable="false" onerror="this.remove()" style="position:absolute;inset:0;height:100%;border-radius:0">':'')+'</div></div>'}
 function home(){var rs=OUT.filter(function(o){return o.cover}).concat(OUT.filter(function(o){return !o.cover})).slice(0,8),ring=[0,1,2].map(function(){return rs.map(rcard).join('')}).join('');
-return '<section class="hero"><div class="w hh"><p class="pl">Find your fashion style</p><h1>Discover your style.<br>Play with fashion.</h1><p class="sb">Pick a style you love, build outfits piece by piece, and mix Korean, Y2K, streetwear and more into a look that is yours.</p><div class="cta"><a class="btn" href="#/discover">Explore Styles</a><a class="btn g" href="#/builder">Start Creating</a><a class="btn g" href="#/gacha">🎲 Random Outfit</a></div>'+(window.uxShopLink?uxShopLink():'')+'<div class="soon" style="justify-content:center;margin-top:22px">'+SK().map(function(k){return '<a href="#/style/'+k+'"><span>'+k+'</span></a>'}).join('')+'</div></div><div class="rw3" id="ring">'+ring+'</div><p class="mu" style="padding:4px 0 22px">← Drag the looks to spin →</p></section>'
+return '<section class="hero"><div class="w hh">'+(window.slHome?slHome():'')+'<p class="pl">Find your fashion style</p><h1>Discover your style.<br>Play with fashion.</h1><p class="sb">Pick a style you love, build outfits piece by piece, and mix Korean, Y2K, streetwear and more into a look that is yours.</p><div class="cta"><a class="btn" href="#/discover">Explore Styles</a><a class="btn g" href="#/builder">Start Creating</a><a class="btn g" href="#/gacha">🎲 Random Outfit</a></div>'+(window.uxShopLink?uxShopLink():'')+'<div class="soon" style="justify-content:center;margin-top:22px">'+SK().map(function(k){return '<a href="#/style/'+k+'"><span>'+k+'</span></a>'}).join('')+'</div></div><div class="rw3" id="ring">'+ring+'</div><p class="mu" style="padding:4px 0 22px">← Drag the looks to spin →</p></section>'
 +'<section class="sec w"><div class="sh"><h2>Popular styles</h2><a class="btn g s" href="#/discover">All styles</a></div><div class="g sg">'+SK().map(sc).join('')+'</div></section>'
 +'<section class="sec w"><div class="sh"><h2>Featured outfits</h2><a class="btn g s" href="#/discover">More looks</a></div><div class="g">'+(window.uxBuyFirst?uxBuyFirst:function(x){return x})(OUT.filter(function(o){return o.featured}).concat(OUT.filter(function(o){return !o.featured}))).slice(0,4).map(function(o){return oc(o)}).join('')+'</div></section>'+shHomeShops()
 +'<section class="sec w"><h2 class="sh">How STYLE PLAY works</h2><div class="steps"><div><b>1</b><h3>Discover</h3><p>Explore styles and complete looks from Korean to Y2K.</p></div><div><b>2</b><h3>Mix and match</h3><p>Add, remove or swap any piece. Pair a Y2K top with streetwear shoes.</p></div><div><b>3</b><h3>Save and shop</h3><p>Save your outfit, then buy from real shops right here, or visit their store.</p></div></div></section>'
@@ -1207,43 +1207,8 @@ else if(a=='look'){if(o)go('#/look/'+o.id)}
 else if(a=='save'){if(!o||GC.saved)return;S.o.push({id:'u'+Date.now(),n:o.n,it:o.it.slice()});save();GC.saved=true;toast('Outfit saved');render()}
 else if(a=='shop'){GC.shop=!GC.shop;render();setTimeout(function(){var e=document.getElementById(GC.shop?'gshop':'gres');if(e)e.scrollIntoView({behavior:'smooth',block:'center'})},50)}}
 
-// KEEP: #/sell is the shop landing page linked in every StylePlay invitation (IG DMs, emails, posts). Do not remove the page or the 'sell' route.
-function pgSell(){var pct=window.lgN?lgN('commission_pct',9):9,days=window.lgN?lgN('ship_days',3):3,ex=590,fee=Math.round(ex*pct)/100;
-var st=(typeof SK=='function'?SK():['Korean','Minimal','Streetwear','Y2K','Casual']).map(function(k){return '<a href="#/style/'+esc(k)+'"><span>'+esc(k)+'</span></a>'}).join('');
-var cta=(window.AU&&AU.user)?'<a class="btn" href="#/partner">กรอกข้อมูลร้าน</a>':'<a class="btn" href="#/partner">สมัครเปิดร้าน (ฟรี)</a>';
-var card=function(t,d){return '<div style="border:1px solid rgba(127,127,127,.25);border-radius:16px;padding:18px"><h3 style="margin:0 0 6px;font-size:17px">'+t+'</h3><p class="mu" style="margin:0">'+d+'</p></div>'};
-var step=function(n,t,d){return '<li style="margin:0 0 12px"><b>'+n+'. '+t+'</b><br><span class="mu">'+d+'</span></li>'};
-var qa=function(q,a){return '<details style="border-top:1px solid rgba(127,127,127,.2);padding:12px 0"><summary style="cursor:pointer;font-weight:600">'+q+'</summary><p class="mu" style="margin:8px 0 0">'+a+'</p></details>'};
-return '<div class="w pg" style="max-width:860px">'
-+'<p class="pl" style="margin:0 0 6px">สำหรับร้านค้า · For shops</p>'
-+'<h1 class="h2" style="margin:0 0 10px">ขายกับ STYLE PLAY</h1>'
-+'<p class="mu" style="font-size:17px;margin:0 0 18px">ลูกค้าเข้ามาเพื่อหาสไตล์การแต่งตัวของตัวเอง แล้วเจอสินค้าของร้านคุณอยู่ในลุคที่ใช่ ทั้งเสื้อผ้า รองเท้า กระเป๋า หมวก และเครื่องประดับ ไม่ใช่จมอยู่ในสินค้าเป็นพันชิ้น</p>'
-+'<div class="rw" style="justify-content:flex-start;gap:10px;margin:0 0 26px">'+cta+'<a class="btn g" href="#/legal/shop">อ่านข้อตกลงสำหรับร้านค้า</a></div>'
-+'<div style="border:1px solid rgba(127,127,127,.25);border-radius:16px;padding:14px 18px;margin:0 0 18px"><b>รับสินค้าแฟชั่นทุกหมวดที่ใช้แต่งลุค</b><br><span class="mu">เสื้อผ้า · รองเท้า / สนีกเกอร์ / รองเท้าแตะ · กระเป๋า · หมวก · เครื่องประดับ สร้อย ต่างหู และแอคเซสซอรี</span></div>'+'<div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:0 0 28px">'
-+card('ลูกค้าเจอร้านผ่านสไตล์','สินค้าของคุณถูกจัดเข้าสไตล์และลุค ลูกค้าที่ชอบแนวเดียวกับร้านจะเจอคุณก่อน')
-+card('ไม่มีค่าสมัคร','ไม่มีค่าแรกเข้า ไม่มีค่ารายเดือน ร้านลงสินค้าเองได้')
-+card('เงินเข้าพร้อมเพย์ร้านโดยตรง','ลูกค้าโอนเงินเข้าพร้อมเพย์ของร้านเอง STYLE PLAY ไม่ได้ถือเงินของคุณ')
-+'</div>'
-+'<div style="border:1px solid rgba(127,127,127,.3);border-radius:16px;padding:20px;margin:0 0 28px"><h2 style="margin:0 0 8px;font-size:20px">ค่าธรรมเนียม: '+pct+'% เฉพาะออเดอร์ที่ขายได้</h2>'
-+'<p class="mu" style="margin:0 0 8px">ไม่ขาย ไม่เสีย ค่าคอมสรุปและเรียกเก็บเป็นรายเดือน</p>'
-+'<p style="margin:0">ตัวอย่าง: ขายสินค้าราคา '+ex+' บาท → ค่าคอม '+fee.toLocaleString('th-TH')+' บาท ร้านได้ '+(ex-fee).toLocaleString('th-TH')+' บาท (ยังไม่รวมค่าส่งที่ร้านกำหนดเอง)</p></div>'
-+'<h2 style="font-size:20px;margin:0 0 12px">เริ่มขายใน 4 ขั้นตอน</h2><ol style="list-style:none;padding:0;margin:0 0 26px">'
-+step(1,'สร้างบัญชี','ใช้อีเมลของร้าน แล้วกดยืนยันในอีเมลที่ได้รับ')
-+step(2,'กรอกข้อมูลร้าน','ชื่อร้าน ช่องทางติดต่อ โลโก้ พร้อมเพย์ และยอมรับข้อตกลงสำหรับร้านค้า')
-+step(3,'รอทีมตรวจ','ทีม STYLE PLAY ตรวจใบสมัครเพื่อให้ร้านบนเว็บเป็นร้านจริงทุกร้าน')
-+step(4,'ลงสินค้าแล้วรอออเดอร์','ลงรูปสินค้าของร้านเอง ราคา และไซส์ เมื่อมีออเดอร์ ร้านจัดส่งเองภายใน '+days+' วัน')
-+'</ol>'
-+'<h2 style="font-size:20px;margin:0 0 6px">สไตล์บน STYLE PLAY</h2><div class="soon" style="justify-content:flex-start;margin:0 0 26px">'+st+'</div>'
-+'<h2 style="font-size:20px;margin:0 0 4px">คำถามที่พบบ่อย</h2>'
-+qa('ต้องมีหน้าร้านจริงไหม','ไม่จำเป็น ร้านที่ขายบน IG, TikTok หรือ Shopee สมัครได้ ขอแค่เป็นร้านจริงและใช้รูปสินค้าของร้านเอง')
-+qa('ลูกค้าจ่ายเงินยังไง','ลูกค้าโอนเข้าพร้อมเพย์ของร้านโดยตรง แล้วร้านยืนยันออเดอร์และจัดส่งเอง')
-+qa('ค่าคอมเก็บยังไง','STYLE PLAY สรุปยอดออเดอร์ที่ขายสำเร็จแล้วออกใบแจ้งค่าคอม '+pct+'% ให้ร้านเป็นรายเดือน')
-+qa('เปิดขายเมื่อไร','ตอนนี้กำลังรับร้านชุดแรก เมื่อมีร้านพร้อมครบชุด ระบบสั่งซื้อจะเปิดให้ลูกค้าสั่งได้')
-+qa('มีคำถามเพิ่มเติม',(window.lgContact?lgContact():'ติดต่อทีม STYLE PLAY'))
-+'<div class="rw" style="justify-content:flex-start;gap:10px;margin:26px 0 0">'+cta+'</div>'
-+'</div>'}
 function render(){var p=decodeURIComponent(location.hash.slice(1)||'/').split('/'),r=p[1]||'',a=p[2];
-var map={'':home,sell:pgSell,gacha:gacha,discover:discover,style:function(){return sty(a)},builder:builder,add:function(){S.am=true;history.replaceState(null,'','#/builder');return builder()},outfits:outfits,favs:favs,diag:diag,admin:adm,partner:pcPage,profile:profile,login:pgLogin,signup:pgSignup,forgot:pgForgot,reset:pgReset,product:function(){return prod(a)},shop:function(){return window.slShop?slShop(a):home()},look:function(){return look(a)},cart:function(){return shCart()},checkout:function(){return shCheckout()},orders:function(){return shOrders()},order:function(){return shOrder(a)},legal:function(){return lgPage(a)}};
+var map={'':home,gacha:gacha,discover:discover,style:function(){return sty(a)},builder:builder,add:function(){S.am=true;history.replaceState(null,'','#/builder');return builder()},outfits:outfits,favs:favs,diag:diag,admin:adm,partner:pcPage,profile:profile,login:pgLogin,signup:pgSignup,forgot:pgForgot,reset:pgReset,product:function(){return prod(a)},shop:function(){return window.slShop?slShop(a):home()},look:function(){return look(a)},cart:function(){return shCart()},checkout:function(){return shCheckout()},orders:function(){return shOrders()},order:function(){return shOrder(a)},legal:function(){return lgPage(a)}};
 S.d.it=okIds(S.d.it);S.o.forEach(function(o){o.it=okIds(o.it)});if(r=='partner'&&ME===null&&!window.PCH&&window.claude){window.PCH=true;pcIdentity()}
 if(r=='admin'&&ADM===null&&!window.CHK&&window.claude){window.CHK=true;recheck().then(function(){window.CHK=false})}
 var was=document.body.classList.contains('adm'),isA=r=='admin';document.body.classList.toggle('adm',isA);document.body.classList.toggle('au-on',['login','signup','forgot','reset'].indexOf(r)>-1);if(isA&&!was){document.body.classList.add('adm-in');setTimeout(function(){document.body.classList.remove('adm-in')},1400)}
@@ -1498,7 +1463,7 @@ function svRole(){var m=SV.mem.filter(function(x){return x.store_id==SV.sid})[0]
 function svStore(){return SV.stores.filter(function(s){return s.id==SV.sid})[0]||null}
 function svPage(){var g=svGate('Partner Center');if(g)return g;
 if(!SV.loaded){if(!SV.loading&&!SV.err)setTimeout(svLoad,0);return svFrame('Partner Center','',SV.err?'<p class="bdg2" style="display:block;white-space:normal">'+esc(SV.err)+'</p>'+svBtn('g','sv_reload',null,'Try again'):'<p style="margin-top:12px">Loading your store…</p>')}
-var p=decodeURIComponent(location.hash.slice(1)).split('/');if(p[2]=='invite'&&p[3]&&!SV.code)SV.code=p[3].slice(0,200);
+var p=decodeURIComponent(location.hash.slice(1)).split('/');if(p[2]=='invite'&&p[3]&&!SV.code)SV.code=p[3].slice(0,200);if(SV.stores.length&&window.slDeep)slDeep(p);
 if(!SV.stores.length)return svFrame('Partner Center','Sell your fashion products on STYLE PLAY.',svApply());
 var s=svStore(),own=svRole()=='owner',tabs=[['board','Dashboard'],['prod','My Products'],['edit',SV.ed&&SV.ed.id?'Edit Product':'Add Product'],['orders','Orders'],['money','Money'],['stock','Stock'],['reviews','Reviews']].concat(own?[['store','Store Profile']]:[]);
 var pick=SV.stores.length>1?'<label class="fl" style="max-width:360px"><span class="mu">Store</span><select class="in" data-a2="sv_pick">'+SV.stores.map(function(x){return '<option value="'+esc(x.id)+'"'+(x.id==SV.sid?' selected':'')+'>'+esc(x.name)+'</option>'}).join('')+'</select></label>':'';
@@ -2829,6 +2794,7 @@ AU.sb.storage.from('payment-slips').createSignedUrl(b.getAttribute('data-p'),600
 'Payments from customers, commission you paid to STYLE PLAY and refunds, each with its slip.':'เงินที่ลูกค้าโอนให้ร้าน ค่าคอมฯ ที่ร้านจ่ายให้ STYLE PLAY และการคืนเงิน พร้อมสลิปทุกรายการ',
 'Slip sent to STYLE PLAY':'ส่งสลิปให้ STYLE PLAY แล้ว','Refund slip saved. The customer can see it now.':'บันทึกสลิปคืนเงินแล้ว ลูกค้าเห็นได้ทันที','This invoice is already paid.':'ใบแจ้งหนี้นี้ชำระแล้ว','This order is not marked as refunded.':'คำสั่งซื้อนี้ยังไม่ได้ตั้งเป็นคืนเงิน','You cannot do this for this shop.':'คุณทำรายการนี้ให้ร้านนี้ไม่ได้',
 'This picture is too large. Take a screenshot of the slip and try again.':'รูปใหญ่เกินไป ลองแคปหน้าจอสลิปแล้วส่งใหม่','The slip could not be opened.':'เปิดสลิปไม่ได้','Loading…':'กำลังโหลด…'});
+TR.push([/^(\d+) orders need you$/,'มี $1 คำสั่งซื้อรอคุณ']);
 TR.push([/^(\d+) commission slips waiting for you to confirm\.$/,'มีสลิปค่าคอมฯ $1 รายการรอคุณยืนยัน'],[/^(\d+) items need a slip from you\.$/,'มี $1 รายการที่ต้องแนบสลิป']);
 (function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Shop sent a slip · see Money':'ร้านแนบสลิปแล้ว · ดูในแท็บการเงิน'});
 // ==================== BULK: hide / show every product in the current list (Admin → Products) ====================
@@ -2905,15 +2871,18 @@ if(UL.ask!=id){UL.ask=id;render();setTimeout(function(){if(UL.ask==id){UL.ask=nu
 // Partner Center: quick actions (add product, view shop as customers see it, copy shop link) + a 5-step start checklist for owners.
 // Public shop page: #/shop/<store id or slug> with the shop's products, its outfits and contact buttons.
 var SL={uid:null,mem:0,app:null,loading:false,goEdit:false};
-function slCheck(){if(!AU.user||!AU.sb){SL.uid=null;SL.mem=0;SL.app=null;return}if(SL.uid==AU.user.id||SL.loading)return;SL.loading=true;var uid=AU.user.id;
-try{Promise.all([AU.sb.from('store_members').select('store_id').eq('user_id',uid),AU.sb.from('seller_applications').select('status,created_at').eq('applicant_id',uid)]).then(function(r){
-SL.loading=false;if(!AU.user||AU.user.id!=uid)return;SL.uid=uid;SL.mem=(r[0].data||[]).length;var ap=(r[1].data||[]).slice().sort(function(a,b){return String(b.created_at).localeCompare(String(a.created_at))});SL.app=(ap[0]||{}).status||null;render()}).catch(function(){SL.loading=false;SL.uid=uid})}catch(e){SL.loading=false;SL.uid=uid}}
+function slCheck(){if(!AU.user||!AU.sb){SL.uid=null;SL.mem=0;SL.app=null;SL.shops=[];return}if(SL.uid==AU.user.id||SL.loading)return;SL.loading=true;var uid=AU.user.id;
+try{Promise.all([AU.sb.from('store_members').select('store_id').eq('user_id',uid),AU.sb.from('seller_applications').select('status,created_at').eq('applicant_id',uid)]).then(async function(r){
+var ids=(r[0].data||[]).map(function(m){return m.store_id}),shops=[],wait=0;
+if(ids.length){try{var a=await AU.sb.from('stores').select('id,name,slug,status').in('id',ids);shops=a.data||[]}catch(e){}
+try{var o=await AU.sb.from('orders').select('id,status').in('store_id',ids);wait=(o.data||[]).filter(function(x){return x.status=='to_ship'||x.status=='payment_review'}).length}catch(e){}}
+SL.loading=false;if(!AU.user||AU.user.id!=uid)return;SL.uid=uid;SL.mem=ids.length;SL.shops=shops;SL.wait=wait;var ap=(r[1].data||[]).slice().sort(function(a,b){return String(b.created_at).localeCompare(String(a.created_at))});SL.app=(ap[0]||{}).status||null;render()}).catch(function(){SL.loading=false;SL.uid=uid})}catch(e){SL.loading=false;SL.uid=uid}}
 function slNav(){if(!window.shOn||!shOn())return [];setTimeout(slCheck,0);if(AU.user&&SL.uid==AU.user.id&&SL.mem)return [['#/partner','🏪 My shop']];
 if(AU.user&&SL.uid==AU.user.id&&(SL.app=='submitted'||SL.app=='changes_requested'||SL.app=='draft'))return [['#/partner',SL.app=='submitted'?'My shop (in review)':'Finish shop application']];return [['#/partner','Sell with us']]}
 function slShopUrl(id){var s=SBC.stores&&SBC.stores[id];return location.origin+location.pathname+'#/shop/'+encodeURIComponent((s&&s.slug)||id)}
 // profile card
 function slProfileCard(){if(!AU.user)return '';setTimeout(slCheck,0);if(SL.uid!=AU.user.id)return '';
-if(SL.mem)return '<div class="cd" style="padding:14px 16px;margin-top:18px"><h3 style="margin:0 0 4px">🏪 '+tx('My shop')+'</h3><p class="mu" style="margin:0 0 10px">'+tx('Add products, handle orders and edit your shop profile in the Partner Center.')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn s" href="#/partner">'+tx('Open my shop')+'</a><button type="button" class="btn g s" data-a="sl_add">'+tx('+ Add product')+'</button></div></div>';
+if(SL.mem)return '<div class="cd" style="padding:14px 16px;margin-top:18px"><h3 style="margin:0 0 4px">🏪 '+tx('My shop')+'</h3><p class="mu" style="margin:0 0 10px">'+tx('Add products, handle orders and edit your shop profile in the Partner Center.')+'</p>'+slLinks()+'</div>';
 if(SL.app=='submitted')return '<div class="cd" style="padding:14px 16px;margin-top:18px"><h3 style="margin:0 0 4px">🏪 '+tx('My shop')+'</h3><p class="mu" style="margin:0 0 10px">'+tx('Your shop application is being checked. We will email you when it is approved.')+'</p><a class="btn g s" href="#/partner">'+tx('See application')+'</a></div>';
 return '<div class="cd" style="padding:14px 16px;margin-top:18px"><h3 style="margin:0 0 4px">'+tx('Have a fashion shop?')+'</h3><p class="mu" style="margin:0 0 10px">'+tx('Open your shop on STYLE PLAY. Customers pay you directly by PromptPay.')+'</p><a class="btn g s" href="#/partner">'+tx('Sell with us')+'</a></div>'}
 // Partner Center: quick actions + start checklist
@@ -2927,6 +2896,18 @@ return act+'<div class="cd" style="padding:14px 16px;margin-top:12px"><div style
 +'<div style="height:6px;border-radius:6px;background:var(--ln);margin:8px 0 6px;overflow:hidden"><div style="height:100%;width:'+Math.round(done/steps.length*100)+'%;background:#1a7f37"></div></div>'
 +steps.map(function(x){return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--ln)"><span>'+(x[0]?'✅ ':'⬜ ')+esc(tx(x[1]))+'</span>'+(x[0]?'':'<button type="button" class="btn g s" data-a="sl_tab" data-id="'+x[2]+'">'+tx('Do it')+'</button>')+'</div>'}).join('')
 +'<p class="mu" style="margin:6px 0 0;font-size:13px">'+tx('PromptPay, shipping fee and contacts are in the Orders tab. Logo and description are in Store Profile.')+'</p></div>'}
+// shortcuts to every part of the shop (used on the home page and the profile card)
+function slLinks(){var w=SL.wait||0;return '<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn s" href="#/partner/prod">'+tx('My products')+'</a><a class="btn g s" href="#/partner/edit">'+tx('+ Add product')+'</a>'
++'<a class="btn g s" href="#/partner/orders">'+esc(tx('Shop orders'))+(w?' <span class="sp2" style="background:#ffd6e2;margin-left:4px">'+w+'</span>':'')+'</a><a class="btn g s" href="#/partner/store">'+tx('Shop profile')+'</a><a class="btn g s" href="#/partner/board">'+tx('Sales')+'</a></div>'}
+function slHome(){if(!AU.user)return '';setTimeout(slCheck,0);if(SL.uid!=AU.user.id)return '';
+if(SL.mem){var sh=(SL.shops||[])[0]||{},w=SL.wait||0;return '<div class="cd" style="padding:14px 16px;box-shadow:inset 0 0 0 2px #1a7f37;margin:0 auto 22px;max-width:760px;text-align:left"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><div><span class="mu" style="font-size:13px">'+tx('Your shop')+'</span><br><b style="font-size:1.15em">🏪 '+esc(sh.name||tx('My shop'))+'</b></div>'
++(w?'<a href="#/partner/orders" class="sp2" style="background:#ffd6e2;text-decoration:none;color:inherit">'+esc(w==1?tx('1 order needs you'):tx(w+' orders need you'))+'</a>':'')+'</div>'+slLinks()+'</div>'}
+if(SL.app=='submitted')return '<div class="cd" style="padding:12px 16px;margin:0 auto 22px;max-width:760px;text-align:left"><b>🏪 '+tx('Your shop application is being checked.')+'</b> <a href="#/partner"><u>'+tx('See application')+'</u></a></div>';
+if(SL.app=='draft'||SL.app=='changes_requested')return '<div class="cd" style="padding:12px 16px;margin:0 auto 22px;max-width:760px;text-align:left"><b>🏪 '+tx(SL.app=='draft'?'Your shop application is not sent yet.':'STYLE PLAY asked for changes to your shop application.')+'</b> <a href="#/partner"><u>'+tx('Finish shop application')+'</u></a></div>';
+return ''}
+// #/partner/<tab> opens that tab directly
+function slDeep(p){var h=location.hash;if(SL.dh==h)return;SL.dh=h;var t=p[2];if(['board','prod','edit','orders','money','stock','reviews','store'].indexOf(t)<0)return;if(t=='edit'){svEdOpen(null)}SV.tab=t;SV.bad={};setTimeout(function(){window.scrollTo(0,0)},0)}
+window.addEventListener('hashchange',function(){if(location.hash.indexOf('#/partner')!=0)SL.dh=null});
 // public shop page
 function slShop(key){var S2=SBC.stores||{},id=null,k=String(key||'');if(S2[k])id=k;else Object.keys(S2).forEach(function(x){if(S2[x].slug==k)id=x});var s=id&&S2[id];
 if(!s||s.status!='active')return '<div class="w pg"><h1 class="h2">'+tx('Shop not found')+'</h1><p class="mu" style="margin:10px 0 16px">'+tx('This shop is not open on STYLE PLAY right now.')+'</p><a class="btn" href="#/discover">'+tx('Discover')+'</a></div>';
@@ -2941,9 +2922,9 @@ if(b.getAttribute('data-a')=='sl_add'){SL.goEdit=true;location.hash='#/partner';
 if(b.getAttribute('data-a')=='sl_tab'){var t=b.getAttribute('data-id');if(t=='edit'&&!SV.ed)svEdOpen(null);SV.tab=t;SV.bad={};render();window.scrollTo(0,0);return}
 var u=slShopUrl(b.getAttribute('data-id'));var done=function(){toast('Shop link copied. Put it in your Instagram bio or LINE.')};
 try{navigator.clipboard.writeText(u).then(done,function(){window.prompt?0:0;toast(u)})}catch(x){toast(u)}},true);
-(function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'🎲 Gacha':'🎲 กาชา','Gacha':'กาชา','🏪 My shop':'🏪 ร้านของฉัน','My shop':'ร้านของฉัน','My shop (in review)':'ร้านของฉัน (รอตรวจ)','Finish shop application':'สมัครเปิดร้านต่อ','Sell with us':'เปิดร้านกับเรา',
+(function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'My products':'สินค้าของฉัน','Shop orders':'คำสั่งซื้อของร้าน','Shop profile':'โปรไฟล์ร้าน','Sales':'ยอดขาย','Your shop':'ร้านของคุณ','1 order needs you':'มี 1 คำสั่งซื้อรอคุณ','Your shop application is being checked.':'กำลังตรวจใบสมัครร้านของคุณ','Your shop application is not sent yet.':'ใบสมัครร้านของคุณยังไม่ได้ส่ง','STYLE PLAY asked for changes to your shop application.':'STYLE PLAY ขอให้แก้ไขใบสมัครร้าน','🎲 Gacha':'🎲 กาชา','Gacha':'กาชา','🏪 My shop':'🏪 ร้านของฉัน','My shop':'ร้านของฉัน','My shop (in review)':'ร้านของฉัน (รอตรวจ)','Finish shop application':'สมัครเปิดร้านต่อ','Sell with us':'เปิดร้านกับเรา',
 'Add products, handle orders and edit your shop profile in the Partner Center.':'เพิ่มสินค้า จัดการคำสั่งซื้อ และแก้ข้อมูลร้านได้ที่ศูนย์พาร์ทเนอร์','Open my shop':'เข้าร้านของฉัน','+ Add product':'+ เพิ่มสินค้า',
-'Your shop application is being checked. We will email you when it is approved.':'กำลังตรวจใบสมัครร้านของคุณ จะแจ้งทางอีเมลเมื่ออนุมัติ','See application':'ดูใบสมัคร','Have a fashion shop?':'มีร้านแฟชั่นไหม? เสื้อผ้า รองเท้า กระเป๋า เครื่องประดับ',
+'Your shop application is being checked. We will email you when it is approved.':'กำลังตรวจใบสมัครร้านของคุณ จะแจ้งทางอีเมลเมื่ออนุมัติ','See application':'ดูใบสมัคร','Have a fashion shop?':'มีร้านเสื้อผ้าไหม?',
 'Open your shop on STYLE PLAY. Customers pay you directly by PromptPay.':'เปิดร้านบน STYLE PLAY ได้ ลูกค้าโอนเงินตรงเข้าพร้อมเพย์ของร้าน','View my shop as customers see it':'ดูหน้าร้านแบบที่ลูกค้าเห็น','Copy shop link':'คัดลอกลิงก์ร้าน',
 'Get your shop ready':'เตรียมร้านให้พร้อมขาย','Shop logo and description':'โลโก้และคำอธิบายร้าน','PromptPay for receiving money':'พร้อมเพย์สำหรับรับเงิน','Shipping fee':'ค่าส่ง','LINE or Instagram for customer questions':'LINE หรือ Instagram ให้ลูกค้าทักถาม',
 'First product approved (waiting for STYLE PLAY)':'สินค้าชิ้นแรกได้รับอนุมัติ (รอ STYLE PLAY ตรวจ)','Add your first product':'ลงสินค้าชิ้นแรก','Do it':'ไปทำ',
