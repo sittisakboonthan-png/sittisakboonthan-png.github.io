@@ -1207,6 +1207,7 @@ else if(a=='look'){if(o)go('#/look/'+o.id)}
 else if(a=='save'){if(!o||GC.saved)return;S.o.push({id:'u'+Date.now(),n:o.n,it:o.it.slice()});save();GC.saved=true;toast('Outfit saved');render()}
 else if(a=='shop'){GC.shop=!GC.shop;render();setTimeout(function(){var e=document.getElementById(GC.shop?'gshop':'gres');if(e)e.scrollIntoView({behavior:'smooth',block:'center'})},50)}}
 
+// KEEP: #/sell is the shop landing page linked in every StylePlay invitation (IG DMs, emails, posts). Do not remove the page or the 'sell' route.
 function pgSell(){var pct=window.lgN?lgN('commission_pct',9):9,days=window.lgN?lgN('ship_days',3):3,ex=590,fee=Math.round(ex*pct)/100;
 var st=(typeof SK=='function'?SK():['Korean','Minimal','Streetwear','Y2K','Casual']).map(function(k){return '<a href="#/style/'+esc(k)+'"><span>'+esc(k)+'</span></a>'}).join('');
 var cta=(window.AU&&AU.user)?'<a class="btn" href="#/partner">กรอกข้อมูลร้าน</a>':'<a class="btn" href="#/partner">สมัครเปิดร้าน (ฟรี)</a>';
