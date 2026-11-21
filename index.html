@@ -1207,44 +1207,8 @@ else if(a=='look'){if(o)go('#/look/'+o.id)}
 else if(a=='save'){if(!o||GC.saved)return;S.o.push({id:'u'+Date.now(),n:o.n,it:o.it.slice()});save();GC.saved=true;toast('Outfit saved');render()}
 else if(a=='shop'){GC.shop=!GC.shop;render();setTimeout(function(){var e=document.getElementById(GC.shop?'gshop':'gres');if(e)e.scrollIntoView({behavior:'smooth',block:'center'})},50)}}
 
-// KEEP: #/sell is the shop landing page linked in every StylePlay invitation (IG DMs, emails, posts). Do not remove the page or the 'sell' route.
-function pgSell(){var pct=window.lgN?lgN('commission_pct',9):9,days=window.lgN?lgN('ship_days',3):3,ex=590,fee=Math.round(ex*pct)/100;
-var st=(typeof SK=='function'?SK():['Korean','Minimal','Streetwear','Y2K','Casual']).map(function(k){return '<a href="#/style/'+esc(k)+'"><span>'+esc(k)+'</span></a>'}).join('');
-var cta=(window.AU&&AU.user)?'<a class="btn" href="#/partner">กรอกข้อมูลร้าน</a>':'<a class="btn" href="#/partner">สมัครเปิดร้าน (ฟรี)</a>';
-var card=function(t,d){return '<div style="border:1px solid rgba(127,127,127,.25);border-radius:16px;padding:18px"><h3 style="margin:0 0 6px;font-size:17px">'+t+'</h3><p class="mu" style="margin:0">'+d+'</p></div>'};
-var step=function(n,t,d){return '<li style="margin:0 0 12px"><b>'+n+'. '+t+'</b><br><span class="mu">'+d+'</span></li>'};
-var qa=function(q,a){return '<details style="border-top:1px solid rgba(127,127,127,.2);padding:12px 0"><summary style="cursor:pointer;font-weight:600">'+q+'</summary><p class="mu" style="margin:8px 0 0">'+a+'</p></details>'};
-return '<div class="w pg" style="max-width:860px">'
-+'<p class="pl" style="margin:0 0 6px">สำหรับร้านค้า · For shops</p>'
-+'<h1 class="h2" style="margin:0 0 10px">ขายกับ STYLE PLAY</h1>'
-+'<p class="mu" style="font-size:17px;margin:0 0 18px">ลูกค้าเข้ามาเพื่อหาสไตล์การแต่งตัวของตัวเอง แล้วเจอสินค้าของร้านคุณอยู่ในลุคที่ใช่ ทั้งเสื้อผ้า รองเท้า กระเป๋า หมวก และเครื่องประดับ ไม่ใช่จมอยู่ในสินค้าเป็นพันชิ้น</p>'
-+'<div class="rw" style="justify-content:flex-start;gap:10px;margin:0 0 26px">'+cta+'<a class="btn g" href="#/legal/shop">อ่านข้อตกลงสำหรับร้านค้า</a></div>'
-+'<div style="border:1px solid rgba(127,127,127,.25);border-radius:16px;padding:14px 18px;margin:0 0 18px"><b>รับสินค้าแฟชั่นทุกหมวดที่ใช้แต่งลุค</b><br><span class="mu">เสื้อผ้า · รองเท้า / สนีกเกอร์ / รองเท้าแตะ · กระเป๋า · หมวก · เครื่องประดับ สร้อย ต่างหู และแอคเซสซอรี</span></div>'+'<div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:0 0 28px">'
-+card('ลูกค้าเจอร้านผ่านสไตล์','สินค้าของคุณถูกจัดเข้าสไตล์และลุค ลูกค้าที่ชอบแนวเดียวกับร้านจะเจอคุณก่อน')
-+card('ไม่มีค่าสมัคร','ไม่มีค่าแรกเข้า ไม่มีค่ารายเดือน ร้านลงสินค้าเองได้')
-+card('เงินเข้าพร้อมเพย์ร้านโดยตรง','ลูกค้าโอนเงินเข้าพร้อมเพย์ของร้านเอง STYLE PLAY ไม่ได้ถือเงินของคุณ')
-+'</div>'
-+'<div style="border:1px solid rgba(127,127,127,.3);border-radius:16px;padding:20px;margin:0 0 28px"><h2 style="margin:0 0 8px;font-size:20px">ค่าธรรมเนียม: '+pct+'% เฉพาะออเดอร์ที่ขายได้</h2>'
-+'<p class="mu" style="margin:0 0 8px">ไม่ขาย ไม่เสีย ค่าคอมสรุปและเรียกเก็บเป็นรายเดือน</p>'
-+'<p style="margin:0">ตัวอย่าง: ขายสินค้าราคา '+ex+' บาท → ค่าคอม '+fee.toLocaleString('th-TH')+' บาท ร้านได้ '+(ex-fee).toLocaleString('th-TH')+' บาท (ยังไม่รวมค่าส่งที่ร้านกำหนดเอง)</p></div>'
-+'<h2 style="font-size:20px;margin:0 0 12px">เริ่มขายใน 4 ขั้นตอน</h2><ol style="list-style:none;padding:0;margin:0 0 26px">'
-+step(1,'สร้างบัญชี','ใช้อีเมลของร้าน แล้วกดยืนยันในอีเมลที่ได้รับ')
-+step(2,'กรอกข้อมูลร้าน','ชื่อร้าน ช่องทางติดต่อ โลโก้ พร้อมเพย์ และยอมรับข้อตกลงสำหรับร้านค้า')
-+step(3,'รอทีมตรวจ','ทีม STYLE PLAY ตรวจใบสมัครเพื่อให้ร้านบนเว็บเป็นร้านจริงทุกร้าน')
-+step(4,'ลงสินค้าแล้วรอออเดอร์','ลงรูปสินค้าของร้านเอง ราคา และไซส์ เมื่อมีออเดอร์ ร้านจัดส่งเองภายใน '+days+' วัน')
-+'</ol>'
-+'<h2 style="font-size:20px;margin:0 0 6px">สไตล์บน STYLE PLAY</h2><div class="soon" style="justify-content:flex-start;margin:0 0 26px">'+st+'</div>'
-+'<h2 style="font-size:20px;margin:0 0 4px">คำถามที่พบบ่อย</h2>'
-+qa('ต้องมีหน้าร้านจริงไหม','ไม่จำเป็น ร้านที่ขายบน IG, TikTok หรือ Shopee สมัครได้ ขอแค่เป็นร้านจริงและใช้รูปสินค้าของร้านเอง')
-+qa('ลูกค้าจ่ายเงินยังไง','ลูกค้าโอนเข้าพร้อมเพย์ของร้านโดยตรง แล้วร้านยืนยันออเดอร์และจัดส่งเอง')
-+qa('ค่าคอมเก็บยังไง','STYLE PLAY สรุปยอดออเดอร์ที่ขายสำเร็จแล้วออกใบแจ้งค่าคอม '+pct+'% ให้ร้านเป็นรายเดือน')
-+qa('เปิดขายเมื่อไร','ตอนนี้กำลังรับร้านชุดแรก เมื่อมีร้านพร้อมครบชุด ระบบสั่งซื้อจะเปิดให้ลูกค้าสั่งได้')
-+qa('มีคำถามเพิ่มเติม',(window.lgContact?lgContact():'ติดต่อทีม STYLE PLAY'))
-+'<div class="rw" style="justify-content:flex-start;gap:10px;margin:26px 0 0">'+cta+'</div>'
-+'</div>'}
-
 function render(){var p=decodeURIComponent(location.hash.slice(1)||'/').split('/'),r=p[1]||'',a=p[2];
-var map={'':home,sell:pgSell,gacha:gacha,discover:discover,style:function(){return sty(a)},builder:builder,add:function(){S.am=true;history.replaceState(null,'','#/builder');return builder()},outfits:outfits,favs:favs,diag:diag,admin:adm,partner:pcPage,profile:profile,login:pgLogin,signup:pgSignup,forgot:pgForgot,reset:pgReset,product:function(){return prod(a)},shop:function(){return window.slShop?slShop(a):home()},look:function(){return look(a)},cart:function(){return shCart()},checkout:function(){return shCheckout()},orders:function(){return shOrders()},order:function(){return shOrder(a)},legal:function(){return lgPage(a)}};
+var map={'':home,gacha:gacha,discover:discover,style:function(){return sty(a)},builder:builder,add:function(){S.am=true;history.replaceState(null,'','#/builder');return builder()},outfits:outfits,favs:favs,diag:diag,admin:adm,partner:pcPage,profile:profile,login:pgLogin,signup:pgSignup,forgot:pgForgot,reset:pgReset,product:function(){return prod(a)},shop:function(){return window.slShop?slShop(a):home()},look:function(){return look(a)},cart:function(){return shCart()},checkout:function(){return shCheckout()},orders:function(){return shOrders()},order:function(){return shOrder(a)},legal:function(){return lgPage(a)}};
 S.d.it=okIds(S.d.it);S.o.forEach(function(o){o.it=okIds(o.it)});if(r=='partner'&&ME===null&&!window.PCH&&window.claude){window.PCH=true;pcIdentity()}
 if(r=='admin'&&ADM===null&&!window.CHK&&window.claude){window.CHK=true;recheck().then(function(){window.CHK=false})}
 var was=document.body.classList.contains('adm'),isA=r=='admin';document.body.classList.toggle('adm',isA);document.body.classList.toggle('au-on',['login','signup','forgot','reset'].indexOf(r)>-1);if(isA&&!was){document.body.classList.add('adm-in');setTimeout(function(){document.body.classList.remove('adm-in')},1400)}
@@ -1563,7 +1527,7 @@ return '<div class="cd" style="padding:18px;max-width:680px;margin-top:12px"><h3
 +svSel('Category *','ed.category',[['','Choose a category']].concat(SV.cats.map(function(c){return[c.slug,c.name]})),e.category)
 +svSel('Gender','ed.gender',[['women','Women'],['men','Men'],['unisex','Unisex']],e.gender)
 +svIn('Link to this product in your shop (https://…) *','ed.url',e.url,'url',' maxlength="600"')+svTa('Description','ed.description',e.description,2000)
-+svIn('Brand','ed.brand',e.brand,'text',' maxlength="80"')+svIn('Color','ed.color',e.color,'text',' maxlength="40"')+svIn('Sizes (comma separated, e.g. S, M, L)','ed.sizes',e.sizes,'text',' maxlength="120"')
++svIn('Brand','ed.brand',e.brand,'text',' maxlength="80"')+svIn('Color','ed.color',e.color,'text',' maxlength="40"')+(window.szChips?szChips('ed',e):svIn('Sizes (comma separated, e.g. S, M, L)','ed.sizes',e.sizes,'text',' maxlength="120"'))
 +'<div data-f="ed.styles"'+(svB('ed.styles')?' class="vbad"':'')+'><p class="mu" style="margin:6px 0">Style (pick one or more) *</p><div class="ch'+(svB('ed.styles')?' vgrp':'')+'" style="flex-wrap:wrap" role="group"'+svBA('ed.styles')+'>'+SV.stys.map(function(s){return '<button type="button" class="'+(e.styles.indexOf(s.slug)>-1?'on':'')+'" data-a="sv_sty" data-id="'+esc(s.slug)+'" aria-pressed="'+(e.styles.indexOf(s.slug)>-1)+'">'+esc(s.name)+'</button>'}).join('')+'</div>'+(svB('ed.styles')?'<span class="vfe" id="fe-ed-styles" role="alert" style="margin-top:6px">'+esc(svB('ed.styles'))+'</span>':'')+'</div>'
 +'<div class="rw" style="margin-left:0;margin-top:10px;flex-wrap:wrap">'+(live||wait?svBtn('','sv_save','keep','Save changes'):svBtn('g','sv_save','draft','Save draft')+svBtn('','sv_save','submit','Send for review'))+svBtn('g','sv_cancel',null,'Cancel')+'</div></div>'}
 function svEdCheck(e,submit,pre,noUrl){pre=pre||'ed';var err=[];if(String(e.name).trim().length<2)err.push([pre+'.name','Enter the product name (at least 2 characters)']);var pr=Number(e.price);if(e.price===''||!isFinite(pr)||pr<0||pr>9999999)err.push([pre+'.price','Enter a price in baht (0 or more)']);if(!e.category)err.push([pre+'.category','Choose a category']);
@@ -1724,7 +1688,7 @@ return '<div class="cd" style="padding:18px;max-width:680px;margin-top:12px"><h3
 +svSel('Category *','aed.category',[['','Choose a category']].concat(SA.acats.filter(function(c){return c.active||c.slug==e.category}).map(function(c){return[c.slug,c.name]})),e.category)
 +svSel('Gender','aed.gender',[['women','Women'],['men','Men'],['unisex','Unisex']],e.gender)
 +svIn((saStore(e.store)||{}).is_demo?'Link to this product in the shop (not needed for the demo store)':'Link to this product in the shop (https://…)','aed.url',e.url,'url',' maxlength="600"')+svTa('Description','aed.description',e.description,2000)
-+svIn('Brand','aed.brand',e.brand,'text',' maxlength="80"')+svIn('Color','aed.color',e.color,'text',' maxlength="40"')+svIn('Sizes (comma separated, e.g. S, M, L)','aed.sizes',e.sizes,'text',' maxlength="120"')
++svIn('Brand','aed.brand',e.brand,'text',' maxlength="80"')+svIn('Color','aed.color',e.color,'text',' maxlength="40"')+(window.szChips?szChips('aed',e):svIn('Sizes (comma separated, e.g. S, M, L)','aed.sizes',e.sizes,'text',' maxlength="120"'))
 +'<div data-f="aed.styles"'+(svB('aed.styles')?' class="vbad"':'')+'><p class="mu" style="margin:6px 0">Style (pick one or more) *</p><div class="ch'+(svB('aed.styles')?' vgrp':'')+'" style="flex-wrap:wrap" role="group">'+SA.astys.filter(function(s){return s.active||e.styles.indexOf(s.slug)>-1}).map(function(s){var on=e.styles.indexOf(s.slug)>-1;return '<button type="button" class="'+(on?'on':'')+'" data-a="sa_psty" data-id="'+esc(s.slug)+'" aria-pressed="'+on+'">'+esc(s.name)+'</button>'}).join('')+'</div>'+(svB('aed.styles')?'<span class="vfe" role="alert" style="margin-top:6px">'+esc(svB('aed.styles'))+'</span>':'')+'</div>'
 +'<p class="mu" style="margin:10px 0 0">Changes you make here go live straight away when the product is live.</p>'
 +'<div class="rw" style="margin-left:0;margin-top:10px;flex-wrap:wrap">'+svBtn('g','sa_psave','save',e.status=='published'?'Save changes':'Save (not live)')+(e.status=='published'?'':svBtn('','sa_psave','publish','Save and publish'))+svBtn('g','sa_pcancel',null,'Cancel')+'</div></div>'}
@@ -2852,7 +2816,7 @@ BK.ask=null;BK.run={k:k,done:0,total:ids.length};render();var sb=AU.sb,q=ids.sli
 async function one(id){try{if(k=='hide')await svFn('review-product',{product_id:id,decision:'hide',note:'Hidden by STYLE PLAY'});
 else{var p=saP(id);if(p.status!='pending_review')await svQ(sb.from('products').update({status:'pending_review'}).eq('id',id));await saFnApprove(id)}}catch(e){fail++}BK.run.done++;render()}
 async function worker(){while(q.length)await one(q.shift())}
-await Promise.all([worker(),worker(),worker(),worker()]);BK.run=null;SA.loaded=false;try{await saLoad()}catch(e){}if(window.sbCat)try{sbCat()}catch(e){}
+await Promise.all([worker(),worker(),worker(),worker()]);SA.loaded=false;try{await saLoad()}catch(e){}BK.run=null;if(window.sbCat)try{sbCat()}catch(e){}
 toast(tx(k=='hide'?'Hidden':'Shown')+': '+(ids.length-fail)+(fail?' · '+tx('failed')+': '+fail:'')+(skip?' · '+tx('skipped (no style or link)')+': '+skip:''));render()}
 document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-a="bk_go"]'):null;if(!b||BK.run)return;e.preventDefault();e.stopPropagation();var k=b.getAttribute('data-id');
 if(BK.ask!=k){BK.ask=k;render();setTimeout(function(){if(BK.ask==k){BK.ask=null;render()}},6000);return}saBulk(k)},true);
@@ -2914,7 +2878,7 @@ if(ids.length){try{var a=await AU.sb.from('stores').select('id,name,slug,status'
 try{var o=await AU.sb.from('orders').select('id,status').in('store_id',ids);wait=(o.data||[]).filter(function(x){return x.status=='to_ship'||x.status=='payment_review'}).length}catch(e){}}
 SL.loading=false;if(!AU.user||AU.user.id!=uid)return;SL.uid=uid;SL.mem=ids.length;SL.shops=shops;SL.wait=wait;var ap=(r[1].data||[]).slice().sort(function(a,b){return String(b.created_at).localeCompare(String(a.created_at))});SL.app=(ap[0]||{}).status||null;render()}).catch(function(){SL.loading=false;SL.uid=uid})}catch(e){SL.loading=false;SL.uid=uid}}
 function slNav(){if(!window.shOn||!shOn())return [];setTimeout(slCheck,0);if(AU.user&&SL.uid==AU.user.id&&SL.mem)return [['#/partner','🏪 My shop']];
-if(AU.user&&SL.uid==AU.user.id&&(SL.app=='submitted'||SL.app=='changes_requested'||SL.app=='draft'))return [['#/partner',SL.app=='submitted'?'My shop (in review)':'Finish shop application']];return [['#/sell','Sell with us']]} // KEEP #/sell: shop landing page from invitations
+if(AU.user&&SL.uid==AU.user.id&&(SL.app=='submitted'||SL.app=='changes_requested'||SL.app=='draft'))return [['#/partner',SL.app=='submitted'?'My shop (in review)':'Finish shop application']];return [['#/partner','Sell with us']]}
 function slShopUrl(id){var s=SBC.stores&&SBC.stores[id];return location.origin+location.pathname+'#/shop/'+encodeURIComponent((s&&s.slug)||id)}
 // profile card
 function slProfileCard(){if(!AU.user)return '';setTimeout(slCheck,0);if(SL.uid!=AU.user.id)return '';
@@ -3030,6 +2994,30 @@ GT.push(setTimeout(function(){ov.querySelector('.gxon').textContent=o?o.n:'';gxC
 document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-a="gx_flip"],[data-a="gx_snd"]'):null;if(!b)return;e.preventDefault();e.stopPropagation();
 if(b.getAttribute('data-a')=='gx_flip'){gxFlip();return}GX.snd=!GX.snd;try{localStorage.setItem('gx_snd',GX.snd?'1':'0')}catch(x){}b.textContent=GX.snd?'🔊':'🔇'},true);
 (function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Which style will you get?':'จะได้สไตล์ไหนกันนะ?','Your style is…':'สไตล์ของคุณคือ…','Tap to reveal':'แตะเพื่อเปิด','Tap the card to reveal!':'แตะการ์ดเพื่อเปิด!','Gacha':'กาชา','Skip':'ข้าม'});
+// ==================== SIZES: tap-to-pick size buttons in the product form (Partner Center + Admin) ====================
+// Stored exactly as before: a comma-separated text ("S, M, L"), so stock, cart and checkout keep working.
+var SZ_TOP=['XS','S','M','L','XL','2XL','3XL','Free size'],SZ_WAIST=['24','26','28','30','32','34','36','38'],SZ_SHOE=['35','36','37','38','39','40','41','42','43','44','45'];
+var SZ_ADD={};
+function szList(t){return String(t||'').split(',').map(function(x){return x.trim()}).filter(Boolean)}
+function szOrder(a){var ref=SZ_TOP.concat(SZ_WAIST,SZ_SHOE);return a.slice().sort(function(x,y){var i=ref.indexOf(x),j=ref.indexOf(y);if(i<0&&j<0)return 0;if(i<0)return 1;if(j<0)return -1;return i-j})}
+function szGroups(cat){var c=String(cat||'').toLowerCase(),g=[['Clothes',SZ_TOP]];
+if(/bottom|pant|jean|short|skirt|trouser/.test(c))g.push(['Waist (inches)',SZ_WAIST]);if(/shoe|sneaker|boot|sandal/.test(c))g=[['Shoe size (EU)',SZ_SHOE],['Clothes',['Free size']]];return g}
+function szChips(k,e){var cur=szList(e.sizes),gs=szGroups(e.category),known=[].concat.apply([],gs.map(function(g){return g[1]})),extra=cur.filter(function(x){return known.indexOf(x)<0});
+var chip=function(z){var on=cur.indexOf(z)>-1;return '<button type="button" class="'+(on?'on':'')+'" data-a="szc" data-k="'+k+'" data-id="'+esc(z)+'" aria-pressed="'+on+'">'+(on?'✓ ':'')+esc(tx(z))+'</button>'};
+var h='<div data-f="'+k+'.sizes" style="margin:6px 0 14px"><p class="mu" style="margin:6px 0">'+tx('Sizes (tap to choose)')+'</p>';
+gs.forEach(function(g){h+=(gs.length>1?'<p class="mu" style="margin:8px 0 4px;font-size:13px">'+tx(g[0])+'</p>':'')+'<div class="ch" style="flex-wrap:wrap" role="group" aria-label="'+esc(tx(g[0]))+'">'+g[1].map(chip).join('')+'</div>'});
+if(extra.length)h+='<p class="mu" style="margin:8px 0 4px;font-size:13px">'+tx('Other sizes')+'</p><div class="ch" style="flex-wrap:wrap">'+extra.map(chip).join('')+'</div>';
+h+='<div style="display:flex;gap:8px;margin-top:8px;max-width:360px"><input class="in" id="szadd-'+k+'" data-szadd="'+k+'" placeholder="'+esc(tx('Other size, e.g. 25 cm or One size'))+'" maxlength="20" value="'+esc(SZ_ADD[k]||'')+'" style="flex:1;min-width:0"><button type="button" class="btn g s" data-a="sza" data-k="'+k+'">'+tx('+ Add')+'</button></div>';
+h+='<p class="mu" style="margin:6px 0 0;font-size:13px">'+(cur.length?esc(tx('Chosen')+': '+szOrder(cur).join(', ')):tx('No size chosen. Leave empty if the item has no sizes.'))+'</p></div>';return h}
+function szSet(k,arr){var e=SV[k];if(!e)return;e.sizes=szOrder(arr).join(', ');if(window.svDirty)try{svDirty()}catch(x){}var y=window.scrollY;render();window.scrollTo(0,y)}
+function szAddOne(k){var inp=document.getElementById('szadd-'+k),v=String((inp&&inp.value)||SZ_ADD[k]||'').replace(/,/g,' ').replace(/\s+/g,' ').trim().slice(0,20);if(!v)return;var cur=szList(SV[k]&&SV[k].sizes);if(cur.indexOf(v)<0)cur.push(v);if(cur.join(', ').length>120){toast('Too many sizes.');return}SZ_ADD[k]='';szSet(k,cur)}
+document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-a="szc"],[data-a="sza"]'):null;if(!b)return;e.preventDefault();e.stopPropagation();var k=b.getAttribute('data-k');if(!SV[k])return;
+if(b.getAttribute('data-a')=='sza'){szAddOne(k);return}var z=b.getAttribute('data-id'),cur=szList(SV[k].sizes),i=cur.indexOf(z);if(i<0){if(cur.concat([z]).join(', ').length>120){toast('Too many sizes.');return}cur.push(z)}else cur.splice(i,1);szSet(k,cur)},true);
+document.addEventListener('change',function(e){var t=e.target,k=t&&t.getAttribute&&t.getAttribute('data-sv');if(k=='ed.category'||k=='aed.category')setTimeout(function(){var y=window.scrollY;render();window.scrollTo(0,y)},0)});
+document.addEventListener('input',function(e){var t=e.target;if(t&&t.getAttribute&&t.getAttribute('data-szadd'))SZ_ADD[t.getAttribute('data-szadd')]=t.value},true);
+document.addEventListener('keydown',function(e){var t=e.target;if(e.key=='Enter'&&t&&t.getAttribute&&t.getAttribute('data-szadd')){e.preventDefault();szAddOne(t.getAttribute('data-szadd'))}},true);
+(function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Sizes (tap to choose)':'ไซซ์ที่มี (แตะเพื่อเลือก)','Clothes':'เสื้อผ้า','Waist (inches)':'เอว (นิ้ว)','Shoe size (EU)':'ไซซ์รองเท้า (EU)','Other sizes':'ไซซ์อื่น',
+'Other size, e.g. 25 cm or One size':'ไซซ์อื่น เช่น 25 ซม.','+ Add':'+ เพิ่ม','Chosen':'เลือกแล้ว','No size chosen. Leave empty if the item has no sizes.':'ยังไม่ได้เลือกไซซ์ ถ้าสินค้าไม่มีไซซ์ ปล่อยว่างได้','Free size':'ฟรีไซซ์','Too many sizes.':'ไซซ์เยอะเกินไป'});
 </script>
 </body>
 </html>
