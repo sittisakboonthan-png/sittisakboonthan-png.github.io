@@ -355,12 +355,12 @@ return '<section class="hero"><div class="w hh"><p class="pl">Find your fashion 
 +'<section class="sec w"><div class="sh"><h2>Featured outfits</h2><a class="btn g s" href="#/discover">More looks</a></div><div class="g">'+(window.uxBuyFirst?uxBuyFirst:function(x){return x})(OUT.filter(function(o){return o.featured}).concat(OUT.filter(function(o){return !o.featured}))).slice(0,4).map(function(o){return oc(o)}).join('')+'</div></section>'+shHomeShops()
 +'<section class="sec w"><h2 class="sh">How STYLE PLAY works</h2><div class="steps"><div><b>1</b><h3>Discover</h3><p>Explore styles and complete looks from Korean to Y2K.</p></div><div><b>2</b><h3>Mix and match</h3><p>Add, remove or swap any piece. Pair a Y2K top with streetwear shoes.</p></div><div><b>3</b><h3>Save and shop</h3><p>Save your outfit, then buy from real shops right here, or visit their store.</p></div></div></section>'
 +'<section class="sec w"><h2 class="sh">Coming next</h2><div class="soon"><span>AI Stylist</span><span>Avatar dress-up</span><span>Virtual try-on</span><span>MBTI style</span><span>Social looks</span><span>Occasion</span><span>Budget</span><span>Color</span><span>Era</span></div></section><footer>STYLE PLAY brings independent fashion shops together. Each shop sells and ships its own products, and you pay the shop directly. <a href="#/admin"><u>Admin</u></a> · <a href="#/partner"><u>For partners</u></a>'+(window.lgFooter?lgFooter():'')+'</footer>'}
-function discover(){var g=S.gd,s=S.ds,gc=g[0].toLowerCase(),PA=Object.keys(P).map(function(i){return P[i]}).filter(function(p){return(s=='All Styles'||p.styles.indexOf(s)>-1)&&(g=='All'||p.gender==g||p.gender=='Unisex')}),PN=PA.filter(function(p){return !P0[p.id]}),PD=PA.filter(function(p){return P0[p.id]}),DR=shDisc(PA),PL=DR.list;var L=OUT.filter(function(o){return(g=='All'||o.g==gc||o.g=='u')&&(s=='All Styles'||inSty(o,s))});
+function discover(){var g=S.gd,s=S.ds,gc=g[0].toLowerCase(),PA=Object.keys(P).map(function(i){return P[i]}).filter(function(p){return !p.unl&&(s=='All Styles'||p.styles.indexOf(s)>-1)&&(g=='All'||p.gender==g||p.gender=='Unisex')}),PN=PA.filter(function(p){return !P0[p.id]}),PD=PA.filter(function(p){return P0[p.id]}),DR=shDisc(PA),PL=DR.list;var L=OUT.filter(function(o){return(g=='All'||o.g==gc||o.g=='u')&&(s=='All Styles'||inSty(o,s))});
 return '<div class="w pg"><h1 class="h2" style="margin-bottom:18px">Discover</h1><p class="lb">For</p>'+chips(['All','Men','Women','Unisex'],g,'dg')+'<p class="lb">Style</p>'+chips(['All Styles'].concat(SK()),s,'ds')+(function(){var PR=shDiscHead(DR)+'<h2 class="sp" id="dprod">'+(S.dq?esc(tx('Results for “'+S.dq+'”')):'Products')+' <span class="mu">'+PL.length+' items</span></h2><div class="g gp">'+PL.map(pc).join('')+'</div>'+(DR.more?'<p style="text-align:center;margin-top:16px"><button class="btn g" data-a="sh_more">Show more</button></p>':''),
 LK='<h2 class="sp" id="dlooks">Outfits <span class="mu">'+L.length+' looks</span></h2>'+(L.length?'<div class="g">'+L.map(function(o){return oc(o)}).join('')+'</div>':'<p class="mu">No looks match those filters. Try All Styles.</p>');
 return S.dq?PR+LK:LK+PR})()+'</div>'}
 function sty(k){var s=STY[k];if(!s)return home();var ord=s.order||[],L=OUT.filter(function(o){return inSty(o,k)});L.sort(function(a,b){var i=ord.indexOf(a.id),j=ord.indexOf(b.id);return(i<0?1e6:i)-(j<0?1e6:j)});
-var al=Object.keys(P).filter(function(i){return P[i].styles.indexOf(k)>-1}),ps=al.length?[0,1,2,3].map(function(n){return al[Math.floor(n*(al.length-1)/3)]}):[];
+var al=Object.keys(P).filter(function(i){return !P[i].unl&&P[i].styles.indexOf(k)>-1}),ps=al.length?[0,1,2,3].map(function(n){return al[Math.floor(n*(al.length-1)/3)]}):[];
 return '<div class="w pg"><button class="btn g s" data-a="back" style="margin-bottom:16px">← Back</button><div class="sth" style="background:'+sbg(s).replace('color:#fff','')+';'+(s.cover?'color:#fff':'')+'">'+hr('s',k)+'<p>Style</p><h1>'+esc(dn(k))+'</h1><p>'+esc(s.short||s.d)+'</p></div>'
 +(s.full?'<p style="max-width:680px;margin:0 0 14px;line-height:1.6">'+esc(s.full)+'</p>':'')+((s.tags||[]).length?'<div class="soon" style="margin-bottom:24px">'+s.tags.map(function(t){return '<span>'+esc(t)+'</span>'}).join('')+'</div>':'')
 +(L.length?'<h2>Complete looks</h2><p class="mu" style="margin:6px 0 14px">Ready-made head-to-toe outfits. Open one to see every piece, or make it your own.</p><div class="g">'+L.map(function(o){return oc(o)}).join('')+'</div>':'')
@@ -404,7 +404,7 @@ P=Object.assign({},P0);HD=!!set.hideDemo;
 if(d.published===false||d.deleted||!(d.styles&&d.styles.length)||!d.category){delete P[d.id];return}
 var pt=d.partner?(CAT.partners||[]).filter(function(x){return x.id==d.partner})[0]:null;if(pt&&pt.status!='Active'){delete P[d.id];return}
 var imgs=(d.images&&d.images.length?d.images:(d.image?[d.image]:[])).map(sbImg);
-var p={id:d.id,name:esc(d.name),image:d.image?sbImg(d.image):(imgs[0]||''),cut:d.cutout?sbImg(d.cutout):'',images:imgs,styles:ss,style:ss[0],category:d.category,subcategory:d.subcategory||'',gender:d.gender||'Unisex',price:+d.price||0,originalPrice:+d.originalPrice||0,currency:'THB',brand:esc(d.brand||''),store:esc((pt?(pt.store||pt.name):d.store)||''),storeLogo:pt&&pt.logo?pt.logo:'',storeUrl:safeUrl(pt&&pt.website),productUrl:safeUrl(d.productUrl),description:esc(d.description||''),color:esc(d.color||''),sizes:(d.sizes||[]).map(esc),tags:(d.tags||[]).map(esc),available:d.available!==false,partner:d.partner||'',i:0};
+var p={id:d.id,name:esc(d.name),image:d.image?sbImg(d.image):(imgs[0]||''),cut:d.cutout?sbImg(d.cutout):'',images:imgs,styles:ss,style:ss[0],category:d.category,subcategory:d.subcategory||'',gender:d.gender||'Unisex',price:+d.price||0,originalPrice:+d.originalPrice||0,currency:'THB',brand:esc(d.brand||''),store:esc((pt?(pt.store||pt.name):d.store)||''),storeLogo:pt&&pt.logo?pt.logo:'',storeUrl:safeUrl(pt&&pt.website),productUrl:safeUrl(d.productUrl),description:esc(d.description||''),color:esc(d.color||''),sizes:(d.sizes||[]).map(esc),tags:(d.tags||[]).map(esc),available:d.available!==false,partner:d.partner||'',unl:!!d.unlisted,i:0};
 p.n=p.name;p.cat=p.category;p.sub=p.subcategory;p.st=p.style;p.br=p.brand;P[p.id]=p});
 // 'hide demo products' only applies once real products exist, and the catalogue can never end up empty
 var mine=(CAT.products||[]).filter(function(d){return !P0[d.id]&&d.published!==false&&d.category&&d.styles&&d.styles.length});
@@ -1358,7 +1358,7 @@ r[0].data.forEach(function(d){var s=st[d.store_id],cat=cn[d.category_slug],sty=p
 var id=typeof d.legacy_id=='string'&&/^[\w\-:.]{1,80}$/.test(d.legacy_id)?d.legacy_id:d.id,a=d.attributes&&typeof d.attributes=='object'?d.attributes:{};
 map[id]=d.id;
 docs.push({id:id,name:sbTxt(d.name,120),styles:sty,category:cat,subcategory:esc(sbTxt(a.subcategory,60)),gender:G[d.gender]||'Unisex',price:+d.price_amount||0,originalPrice:+a.original_price||0,
-brand:sbTxt(a.brand,80),productUrl:sbTxt(d.product_url,600),description:sbTxt(d.description,2000),color:sbTxt(a.color,40),sizes:sbArr(a.sizes,12),tags:sbArr(a.tags,40),cutout:typeof a.cutout=='string'&&/^[\w\-./]+$/.test(a.cutout)&&a.cutout.indexOf('..')<0?SB_URL+'/storage/v1/object/public/product-images/'+a.cutout:'',
+brand:sbTxt(a.brand,80),productUrl:sbTxt(d.product_url,600),description:sbTxt(d.description,2000),color:sbTxt(a.color,40),sizes:sbArr(a.sizes,12),tags:sbArr(a.tags,40),unlisted:a.unlisted===true,cutout:typeof a.cutout=='string'&&/^[\w\-./]+$/.test(a.cutout)&&a.cutout.indexOf('..')<0?SB_URL+'/storage/v1/object/public/product-images/'+a.cutout:'',
 images:im[d.id]||[],image:(im[d.id]||[])[0]||'',published:true,available:true,partner:'sb:'+d.store_id,demo:!!s.is_demo})});
 SBC.map=map;SBC.n=docs.length;SBC.ready=true;SBC.stores=st;SBC.rv={};(r[9]&&r[9].data||[]).forEach(function(x){var e=SBC.rv[x.product_id]=SBC.rv[x.product_id]||{n:0,sum:0};e.n++;e.sum+=+x.rating});SBC.stock={};(r[8].data||[]).forEach(function(x){if(x&&typeof x.size=='string'&&x.qty>=0)(SBC.stock[x.product_id]=SBC.stock[x.product_id]||{})[x.size]=+x.qty});SBC.ord={};SBC.legal={};r[7].data.forEach(function(x){if(x.key=='orders'&&x.value&&typeof x.value=='object')SBC.ord=x.value;if(x.key=='legal'&&x.value&&typeof x.value=='object')SBC.legal=x.value});
 // styles, categories, outfits and settings from Supabase are the full list: built-in ones that are missing there are switched off
@@ -1668,12 +1668,12 @@ return '<div class="rw" style="margin:12px 0 0;justify-content:flex-start;flex-w
 +'<div class="ch" style="flex-wrap:wrap;margin-top:10px">'+S.map(function(s){var n=s[0]=='all'?SA.prods.length:SA.prods.filter(function(p){return p.status==s[0]}).length;return '<button type="button" class="'+(f.st==s[0]?'on':'')+'" data-a="sa_pf" data-id="'+s[0]+'">'+s[1]+' ('+n+')</button>'}).join('')+'</div>'
 +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px"><label class="fl" style="flex:1 1 220px"><span class="mu">Search by name</span><input class="in" type="search" data-sa="pf.q" value="'+esc(f.q||'')+'" enterkeyhint="search"></label>'
 +'<label class="fl" style="flex:1 1 220px"><span class="mu">Store</span><select class="in" data-sa="pf.store"><option value="">All stores</option>'+SA.stores.map(function(s){return '<option value="'+esc(s.id)+'"'+(f.store==s.id?' selected':'')+'>'+esc(s.name)+'</option>'}).join('')+'</select></label></div>'
-+(window.saBulkBar?saBulkBar(L):'')+'<p class="mu">'+L.length+' shown</p><div class="g sg" style="margin-top:8px">'+L.slice(0,120).map(function(p){var st=p.status,b=[svBtn('g s','sa_pedit',p.id,'Edit')];
++(window.ulBar?ulBar(L):'')+(window.saBulkBar?saBulkBar(L):'')+'<p class="mu">'+L.length+' shown</p><div class="g sg" style="margin-top:8px">'+L.slice(0,120).map(function(p){var st=p.status,b=[svBtn('g s','sa_pedit',p.id,'Edit')];
 if(st=='pending_review')b.push(svBtn('s','sa_prod',p.id+'|approve','Approve'));
-if(st=='published')b.push(svBtn('g s','sa_phide',p.id,'Hide'));
+if(st=='published'){if(window.ulBtn)b.push(ulBtn(p));b.push(svBtn('g s','sa_phide',p.id,'Hide everywhere'))}
 if(['draft','hidden','rejected','changes_requested'].indexOf(st)>-1&&(p.product_url||(saStore(p.store_id)||{}).is_demo))b.push(svBtn('s','sa_ppub',p.id,'Publish'));
 b.push(svBtn('d s','sa_pdel',p.id,SA.del==p.id?'Tap again to delete':'Delete'));
-return '<article class="cd">'+saThumb(p.id)+'<h3 class="pn">'+esc(p.name)+'</h3><p class="mu">'+esc((saStore(p.store_id)||{}).name||'')+' · '+m$(+p.price_amount||0)+'</p><p style="margin:6px 4px">'+svPill(st)+'</p><div class="rw" style="margin-left:0;flex-wrap:wrap;gap:6px">'+b.join('')+'</div></article>'}).join('')+'</div>'+(L.length>120?'<p class="mu">Showing the first 120. Use search to find others.</p>':'')}
+return '<article class="cd">'+saThumb(p.id)+'<h3 class="pn">'+esc(p.name)+'</h3><p class="mu">'+esc((saStore(p.store_id)||{}).name||'')+' · '+m$(+p.price_amount||0)+'</p><p style="margin:6px 4px">'+svPill(st)+(window.ulTag?ulTag(p):'')+'</p><div class="rw" style="margin-left:0;flex-wrap:wrap;gap:6px">'+b.join('')+'</div></article>'}).join('')+'</div>'+(L.length>120?'<p class="mu">Showing the first 120. Use search to find others.</p>':'')}
 function saPOpen(p){var a=p&&p.attributes&&typeof p.attributes=='object'?p.attributes:{};SV.bad={};
 SV.aed=p?{id:p.id,store:p.store_id,status:p.status,name:p.name||'',price:p.price_amount==null?'':String(+p.price_amount),category:p.category_slug||'',gender:p.gender||'unisex',url:p.product_url||'',description:p.description||'',brand:a.brand||'',color:a.color||'',sizes:Array.isArray(a.sizes)?a.sizes.join(', '):'',styles:(SA.pst[p.id]||[]).slice(),attrs:a}
 :{id:null,store:(SA.pf&&SA.pf.store)||'',status:'draft',name:'',price:'',category:'',gender:'unisex',url:'',description:'',brand:'',color:'',sizes:'',styles:[],attrs:{}}}
@@ -2243,7 +2243,7 @@ TR.push([/^Cart \((\d+)\)$/,'ตะกร้า ($1)'],[/^You pay (.+) directly 
 TR.push([/^History \((\d+)\)$/,'ประวัติ ($1)'],[/^Bill now \((฿[\d,]+)\)$/,'เรียกเก็บตอนนี้ ($1)'],[/^Orders · (\d+)$/,'คำสั่งซื้อ · $1'],[/^(.+) \((\d+)\)$/,function(m,a,b){return TX[a]&&LG()=='th'?TX[a]+' ('+b+')':m}]);
 // ---------- finding products: real shops first, search ----------
 function shReal(p){return !P0[p.id]}
-function shHomeShops(){var L=Object.keys(P).map(function(i){return P[i]}).filter(shReal).slice(0,8);if(!L.length)return '';
+function shHomeShops(){var L=Object.keys(P).map(function(i){return P[i]}).filter(function(p){return shReal(p)&&!p.unl}).slice(0,8);if(!L.length)return '';
 return '<section class="sec w" id="shopnow"><div class="sh"><h2>New from shops</h2><a class="btn g s" href="#/discover">See all</a></div><div class="g gp">'+L.map(pc).join('')+'</div></section>'}
 function shDisc(PA){var q=(S.dq||'').trim().toLowerCase();if(q){return {list:PA.filter(function(p){return [p.name,p.br,p.store,p.cat].concat(p.styles||[]).join(' ').toLowerCase().indexOf(q)>-1}).slice(0,60),more:false}}
 var all=PA.filter(shReal).concat(PA.filter(function(p){return !shReal(p)})),n=S.dn||12;return {list:all.slice(0,n),more:all.length>n}}
@@ -2819,7 +2819,7 @@ await Promise.all([worker(),worker(),worker(),worker()]);BK.run=null;SA.loaded=f
 toast(tx(k=='hide'?'Hidden':'Shown')+': '+(ids.length-fail)+(fail?' · '+tx('failed')+': '+fail:'')+(skip?' · '+tx('skipped (no style or link)')+': '+skip:''));render()}
 document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-a="bk_go"]'):null;if(!b||BK.run)return;e.preventDefault();e.stopPropagation();var k=b.getAttribute('data-id');
 if(BK.ask!=k){BK.ask=k;render();setTimeout(function(){if(BK.ask==k){BK.ask=null;render()}},6000);return}saBulk(k)},true);
-(function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Hide all shown':'ซ่อนทั้งหมดที่แสดงอยู่','Show all hidden':'แสดงทั้งหมดที่ซ่อนอยู่','Tap again to hide':'แตะอีกครั้งเพื่อซ่อน','Tap again to show':'แตะอีกครั้งเพื่อแสดง',
+(function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Hide all shown':'ซ่อนทุกที่ (รวมในชุด)','Show all hidden':'แสดงทั้งหมดที่ซ่อนอยู่','Tap again to hide':'แตะอีกครั้งเพื่อซ่อน','Tap again to show':'แตะอีกครั้งเพื่อแสดง',
 'Hiding products…':'กำลังซ่อนสินค้า…','Showing products…':'กำลังแสดงสินค้า…','This includes 1 product from a real shop.':'รายการนี้มีสินค้าจากร้านจริง 1 ชิ้นด้วย','To hide only samples, pick the sample store above first.':'ถ้าจะซ่อนเฉพาะสินค้าตัวอย่าง ให้เลือกร้านตัวอย่างในช่อง "ร้านค้า" ด้านบนก่อน',
 'Hidden':'ซ่อนแล้ว','Shown':'แสดงแล้ว','failed':'ไม่สำเร็จ','skipped (no style or link)':'ข้าม (ไม่มีสไตล์หรือลิงก์)'});
 TR.push([/^This includes (\d+) products from real shops\.$/,'รายการนี้มีสินค้าจากร้านจริง $1 ชิ้นด้วย']);
@@ -2837,6 +2837,34 @@ b.disabled=true;AU.sb.auth.resend({type:'signup',email:em,options:{emailRedirect
 'We already sent it. Please wait a minute before asking again.':'ส่งไปแล้ว รอสักครู่ค่อยขอใหม่',
 'Your display name, avatar and cover, your saved outfits and favorites are kept in your account, so they are on every device you sign in to.':'ชื่อที่แสดง รูปโปรไฟล์ ภาพปก ชุดที่บันทึก และรายการโปรด เก็บไว้ในบัญชีของคุณ เปิดได้ทุกเครื่องที่เข้าสู่ระบบ',
 'Log in to keep your outfits and favorites in your account and see them on every device. Browsing as a guest still works.':'เข้าสู่ระบบเพื่อเก็บชุดและรายการโปรดไว้ในบัญชี เปิดได้ทุกเครื่อง ดูเว็บแบบไม่ล็อกอินก็ได้เหมือนเดิม'});
+// ==================== UNLIST: take a product out of the product lists but keep it inside outfits (Admin → Products) ====================
+// Stored in products.attributes.unlisted = true. Unlisted products do not show on Discover, style pages or "New from shops",
+// but outfits, the outfit builder, favorites and the product page itself still show them.
+var UL={ask:null,sig:'',run:null};
+function ulIs(p){return !!(p&&p.attributes&&p.attributes.unlisted===true)}
+function ulTag(p){return ulIs(p)?' <span class="sp2" style="background:#e4e6ee;font-size:12px">'+tx('Only in outfits')+'</span>':''}
+function ulBtn(p){return svBtn('g s','ul_one',p.id+'|'+(ulIs(p)?'0':'1'),ulIs(p)?'Show in product lists':'Only in outfits')}
+async function ulSet(id,on){var p=saP(id);if(!p)return;var a=Object.assign({},(p.attributes&&typeof p.attributes=='object')?p.attributes:{});if(on)a.unlisted=true;else delete a.unlisted;
+var r=await svQ(AU.sb.from('products').update({attributes:a}).eq('id',id).select('id,attributes'));if(!r.length)throw {message:'Not saved. Please try again.'};p.attributes=r[0].attributes}
+function ulBar(L){var sig=L.map(function(p){return p.id}).join(',');if(UL.ask&&UL.sig!=sig)UL.ask=null;UL.sig=sig;UL.ids=L.map(function(p){return p.id});
+var live=L.filter(function(p){return p.status=='published'}),on=live.filter(function(p){return !ulIs(p)}),off=live.filter(ulIs);
+if(UL.run)return '<div class="cd" style="padding:12px 14px;margin-top:10px" role="status"><b>'+esc(tx(UL.run.on?'Taking out of product lists…':'Putting back in product lists…'))+'</b> '+UL.run.done+' / '+UL.run.total+'</div>';
+if(!on.length&&!off.length)return '';
+var h='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px">';
+if(on.length)h+='<button type="button" class="btn '+(UL.ask=='1'?'d':'g')+' s" data-a="ul_all" data-id="1">'+esc(UL.ask=='1'?tx('Tap again to confirm')+' ('+on.length+')':tx('Only in outfits: all shown')+' ('+on.length+')')+'</button>';
+if(off.length)h+='<button type="button" class="btn g s" data-a="ul_all" data-id="0">'+esc(UL.ask=='0'?tx('Tap again to confirm')+' ('+off.length+')':tx('Show in product lists again')+' ('+off.length+')')+'</button>';
+return h+'</div><p class="mu" style="margin:6px 0 0;font-size:13px">'+tx('"Only in outfits" takes products off Discover and style pages, but outfits still show every piece. "Hide everywhere" also removes them from outfits.')+'</p>'}
+async function ulAll(on){var ids=UL.ids.filter(function(id){var p=saP(id);return p&&p.status=='published'&&ulIs(p)!=on}),fail=0,q=ids.slice();UL.ask=null;UL.run={on:on,done:0,total:ids.length};render();
+async function w(){while(q.length){var id=q.shift();try{await ulSet(id,on)}catch(e){fail++}UL.run.done++;render()}}
+await Promise.all([w(),w(),w(),w(),w()]);UL.run=null;if(window.sbCat)try{sbCat()}catch(e){}
+toast(tx(on?'Now only in outfits':'Back in product lists')+': '+(ids.length-fail)+(fail?' · '+tx('failed')+': '+fail:''));render()}
+document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-a="ul_one"],[data-a="ul_all"]'):null;if(!b||b.disabled||UL.run)return;e.preventDefault();e.stopPropagation();var a=b.getAttribute('data-a'),id=b.getAttribute('data-id');
+if(a=='ul_one'){var x=id.split('|');svRun(SA,async function(){await ulSet(x[0],x[1]=='1');if(window.sbCat)try{sbCat()}catch(e){}toast(x[1]=='1'?'Now only in outfits':'Back in product lists')});return}
+if(UL.ask!=id){UL.ask=id;render();setTimeout(function(){if(UL.ask==id){UL.ask=null;render()}},6000);return}ulAll(id=='1')},true);
+(function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Only in outfits':'แสดงเฉพาะในชุด','Show in product lists':'กลับมาแสดงในรายการสินค้า','Only in outfits: all shown':'แสดงเฉพาะในชุด: ทั้งหมดที่แสดงอยู่',
+'Show in product lists again':'กลับมาแสดงในรายการสินค้า','Tap again to confirm':'แตะอีกครั้งเพื่อยืนยัน','Taking out of product lists…':'กำลังเอาออกจากรายการสินค้า…','Putting back in product lists…':'กำลังนำกลับมาในรายการสินค้า…',
+'"Only in outfits" takes products off Discover and style pages, but outfits still show every piece. "Hide everywhere" also removes them from outfits.':'"แสดงเฉพาะในชุด" = สินค้าหายจากหน้าสำรวจและหน้าสไตล์ แต่ชุดยังแสดงครบทุกชิ้น · "ซ่อนทุกที่" = หายจากชุดด้วย',
+'Now only in outfits':'ตั้งเป็นแสดงเฉพาะในชุดแล้ว','Back in product lists':'กลับมาแสดงในรายการสินค้าแล้ว','Hide everywhere':'ซ่อนทุกที่','Not saved. Please try again.':'บันทึกไม่สำเร็จ กรุณาลองใหม่'});
 </script>
 </body>
 </html>
