@@ -1541,7 +1541,7 @@ if(!L.length)return '<p class="mu" style="margin:12px 0">No products yet.</p>'+(
 var c={};L.forEach(function(p){c[p.status]=(c[p.status]||0)+1});
 return '<p class="mu" style="margin:8px 0">'+['published','pending_review','changes_requested','draft','hidden','rejected'].filter(function(k){return c[k]}).map(function(k){return '<span>'+esc(SV_ST[k])+'</span>: '+c[k]}).join(' · ')+'</p>'+(act?svBtn('s','sv_new',null,'+ Add product'):'')
 +'<div class="g sg" style="margin-top:12px">'+L.map(function(p){var st=p.status,b=[];
-b.push(svBtn('g s','sv_edit',p.id,'Edit'));
+b.push(svBtn('g s','sv_edit',p.id,'Edit'));if(window.vrDup)b.push(svBtn('g s','vr_dup',p.id,'Copy'));
 if(['draft','changes_requested','hidden','rejected'].indexOf(st)>-1&&act)b.push(svBtn('s','sv_submit',p.id,'Send for review'));
 if(st=='published'||st=='pending_review')b.push(svBtn('g s','sv_hide',p.id,'Hide'));
 if(st=='draft'||st=='rejected')b.push(svBtn('d s','sv_del',p.id,SV.del==p.id?'Tap again to delete':'Delete'));
@@ -1553,7 +1553,7 @@ function svEdOpen(p){var a=p&&p.attributes&&typeof p.attributes=='object'?p.attr
 SV.ed=p?{id:p.id,status:p.status,name:p.name||'',price:p.price_amount==null?'':String(+p.price_amount),category:p.category_slug||'',gender:p.gender||'unisex',url:p.product_url||'',description:p.description||'',brand:a.brand||'',color:a.color||'',sizes:Array.isArray(a.sizes)?a.sizes.join(', '):'',styles:(SV.pst[p.id]||[]).slice(),attrs:a}
 :{id:null,status:'draft',name:'',price:'',category:(SV.cats[0]||{}).slug||'',gender:'unisex',url:'',description:'',brand:'',color:'',sizes:'',styles:[]};SV.tab='edit';SV.bad={}}
 function svForm(){if(!SV.ed)svEdOpen(null);var e=SV.ed,im=e.id?(SV.imgs[e.id]||[]):[],live=e.status=='published',wait=e.status=='pending_review';
-return '<div class="cd" style="padding:18px;max-width:680px;margin-top:12px"><h3 style="margin:0 0 4px">'+(e.id?'Edit product':'Add product')+' '+(e.id?svPill(e.status):'')+'</h3>'
+return '<div class="cd" style="padding:18px;max-width:680px;margin-top:12px"><h3 style="margin:0 0 4px">'+(e.id?'Edit product':'Add product')+' '+(e.id?svPill(e.status):'')+'</h3>'+(window.vrDupNote?vrDupNote(e):'')
 +(live?'<p class="mu" style="margin-bottom:10px">This product is live. If you change its name, price, link, category or gender, it goes back to review and is hidden until approved.</p>':'')+(wait?'<p class="mu" style="margin-bottom:10px">Waiting for review. You can still change anything; the team will see your latest version.</p>':'')
 +'<p class="mu" style="margin:8px 0 6px">Photos (up to 8; the first one is the main photo)</p><div class="rw" style="margin-left:0;justify-content:flex-start;gap:10px;flex-wrap:wrap">'
 +im.map(function(i){var u=svImgUrl('product-images',i.storage_path);return '<div style="width:110px"><img src="'+esc(u)+'" alt="" style="width:110px;aspect-ratio:4/5;object-fit:cover;border-radius:12px;display:block"><button type="button" class="btn d s" data-a="sv_rmimg" data-id="'+esc(i.id)+'" style="margin-top:6px"'+(SV.busy?' disabled':'')+'>Remove</button></div>'}).join('')+'</div>'
@@ -3313,6 +3313,33 @@ SH_FN.bad_option='An item in your cart needs its colour or size chosen again. Pl
 'Ring size (inner circumference, mm)':'เบอร์แหวน (เส้นรอบวงด้านใน มม.)','Jewelry size':'ขนาดเครื่องประดับ','Inner circumference':'เส้นรอบวงด้านใน','Inner diameter':'เส้นผ่านศูนย์กลางด้านใน',
 'Compare with a piece you already wear: necklace or bracelet length.':'เทียบกับชิ้นที่ใส่อยู่ เช่น ความยาวสร้อยคอหรือสร้อยข้อมือ','Ring size = inner circumference in mm (size 52 = 5.2 cm). Measure a ring that fits you.':'เบอร์แหวน = เส้นรอบวงด้านในเป็นมิลลิเมตร (เบอร์ 52 = 5.2 ซม.) วัดจากแหวนวงที่ใส่พอดี','Jewelry':'เครื่องประดับ','Rings':'แหวน'});
 TR.push([/^(\d+) SKUs made$/,'สร้าง SKU แล้ว $1 รายการ'],[/^(\d+) options are almost sold out$/,'มี $1 ตัวเลือกใกล้หมด'],[/^Up to (\d+) colours\.$/,'เลือกได้ไม่เกิน $1 สี']);
+// ==================== COPY PRODUCT: start a new product from an existing one (Partner Center) ====================
+// Copies name (+ "(สำเนา)"), price, category, gender, description, brand, sizes, size prices, size chart, styles, colours and the options table
+// (price, stock, on-sale). Leaves out what must be new: the product link, the photos (and the photo without background) and the SKUs.
+// Nothing is saved until the shop presses save, so a mistaken tap creates nothing. Saving with the same link as the original is refused.
+async function vrDup(pid){var p=(SV.prods||[]).filter(function(x){return x.id==pid})[0];if(!p)return;var src=SV.ed&&SV.ed.id==pid?SV.ed:null,rows=null;
+try{if(!src||!src._vrReady){rows=await svQ(AU.sb.from('product_variants').select('color,color_hex,size,sku,price,qty,active,position').eq('product_id',pid));rows.sort(function(a,b){return a.position-b.position})}}catch(x){toast('Could not copy. Please try again.');return}
+if(!src){svEdOpen(p);src=SV.ed}
+var cols=src._vrReady?(src.cols||[]).slice():[],vmap={};
+if(rows){cols=vrColsSan(src.attrs&&src.attrs.colors);rows.forEach(function(r){if(!cols.some(function(c){return c.n==r.color}))cols.push({n:r.color,h:vrHex(r.color_hex)||vrPalHex(r.color)||'#cccccc'});vmap[vrK(r.color,r.size)]={sku:'',price:r.price==null?'':String(+r.price),qty:r.qty==null?'':String(r.qty),active:r.active!==false}})}
+else Object.keys(src.vmap||{}).forEach(function(k){var x=src.vmap[k];vmap[k]={sku:'',price:x.price==null?'':String(x.price),qty:x.qty==null?'':String(x.qty),active:x.active!==false}});
+var skus=[];(rows||src._vold||[]).forEach(function(r){if(r.sku)skus.push(String(r.sku).toUpperCase())});
+var a=JSON.parse(JSON.stringify(src.attrs||{}));delete a.cutout;delete a.colors;
+svEdOpen(null);var e=SV.ed;
+Object.assign(e,{name:(String(src.name||'').replace(/\s*\(สำเนา\)\s*$/,'')+' (สำเนา)').slice(0,200),price:src.price,category:src.category,gender:src.gender,description:src.description,brand:src.brand,color:src.color,sizes:src.sizes,styles:(src.styles||[]).slice(),attrs:a,url:'',
+cols:cols,vmap:vmap,_vold:[],_vrReady:true,_dupOf:String(src.name||''),_dupUrl:String(src.url||p.product_url||'').trim(),_dupSkus:skus});
+if(src._pp)e._pp=true;if(src._sc)e._sc=true;SV.tab='edit';SV.bad={};render();window.scrollTo(0,0);toast('Copied. Add the new link and photos, then save.')}
+function vrDupNote(e){if(e._dupOf)return '<div role="status" style="background:var(--s2,#eef0f6);border-radius:14px;padding:12px 14px;margin:8px 0 14px"><b>📄 '+esc(tx('Copy of')+' “'+e._dupOf+'”')+'</b><p class="mu" style="margin:4px 0 0">'+tx('Not saved yet. Colours, sizes, prices and stock are copied. Please add: the new product link and new photos. SKUs are left empty so they do not repeat.')+'</p></div>';
+return e.id?'<p style="margin:4px 0 12px">'+svBtn('g s','vr_dup',e.id,'📄 Copy this product')+'</p>':''}
+// refuse saving a copy with the original's link; keep copy SKUs different from the original's
+var VR_DUPS0=svEdSave;svEdSave=async function(){var e=SV.ed;if(e&&e._dupUrl&&String(e.url||'').trim()&&String(e.url).trim()==e._dupUrl){SV.bad=Object.assign({},SV.bad,{'ed.url':'This is the link of the original product. Use the link of the new product.'});toast('This is the link of the original product. Use the link of the new product.');render();var f=document.querySelector('[data-f="ed.url"]');if(f)f.scrollIntoView({block:'center'});return false}
+var r=await VR_DUPS0.apply(this,arguments);if(r&&e&&e.id){e._dupOf=null}return r};
+document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-a="vr_sku"]'):null;if(!b)return;var ed=SV[b.getAttribute('data-k')];if(!ed||!ed._dupSkus||!ed._dupSkus.length)return;
+setTimeout(function(){var n=0;Object.keys(ed.vmap||{}).forEach(function(k){var x=ed.vmap[k];if(x.sku&&ed._dupSkus.indexOf(String(x.sku).toUpperCase())>-1){x.sku=(x.sku+'-2').slice(0,60);n++}});if(n)vrRender()},0)},true);
+document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-a="vr_dup"]'):null;if(!b||b.disabled)return;e.preventDefault();vrDup(b.getAttribute('data-id'))},true);
+(function(o){Object.keys(o).forEach(function(k){if(!TX[k])TX[k]=o[k]})})({'Copy':'คัดลอก','📄 Copy this product':'📄 คัดลอกสินค้านี้','Copy of':'สำเนาของ','Copied. Add the new link and photos, then save.':'คัดลอกแล้ว ใส่ลิงก์และรูปของสินค้าใหม่ แล้วกดบันทึก','Could not copy. Please try again.':'คัดลอกไม่สำเร็จ ลองใหม่อีกครั้ง',
+'Not saved yet. Colours, sizes, prices and stock are copied. Please add: the new product link and new photos. SKUs are left empty so they do not repeat.':'ยังไม่ได้บันทึก สี ไซซ์ ราคา และสต็อกคัดลอกมาให้แล้ว สิ่งที่ต้องใส่เอง: ลิงก์สินค้าใหม่ และรูปใหม่ ส่วน SKU เว้นว่างไว้ เพื่อไม่ให้ซ้ำกับของเดิม',
+'This is the link of the original product. Use the link of the new product.':'ลิงก์นี้เป็นของสินค้าเดิม กรุณาใส่ลิงก์ของสินค้าใหม่'});
 </script>
 </body>
 </html>
